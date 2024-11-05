@@ -22,15 +22,24 @@
     syscall
 .end_macro
 
-
+.macro print_grid()
+    print_str_input(divider)
+    print_str_input(cells)
+    print_str_input(divider)
+    print_str_input(cells)
+    print_str_input(divider)
+    print_str_input(cells)
+    print_str_input(divider)
+.end_macro
 .text
 main:
-    get_str_input(string_input, 2)
-    print_str_input(string_input)
+    print_grid()
     j end_program
 end_program:
     li $v0, 10
     syscall
     
 .data
-string_input: .space 2
+move_input: .space 2
+divider: .asciiz "+---+---+---+\n"
+cells: .asciiz "|   |   |   |\n"
