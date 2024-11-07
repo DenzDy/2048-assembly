@@ -18,10 +18,23 @@ void print_game_board(int board[][3]){
     printf("+---+---+---+\n");
 }
 
+void add_random_two_to_board(int board[][3]){
+    int r = rand() % 9;
+    int i = r / 3;
+    int j = r % 3;
+    while(board[i][j] != 0){
+        r = rand() % 9;
+        i = r / 3;
+        j = r % 3;
+    }
+    board[i][j] = 2;
+}
+
 int main(){
     int game_board[3][3] = {{0,0,0}, {0,0,0}, {0,0,0}};
     printf("Choose [1] or [2]: \n[1] New Game\n[2] Start from a State\n");
     int new_game_input;
     scanf("%d", &new_game_input);
+    add_random_two_to_board(game_board);
     print_game_board(game_board);
 }
