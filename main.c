@@ -30,6 +30,25 @@ void add_random_two_to_board(int board[][3]){
     board[i][j] = 2;
 }
 
+void check_win_state(int board[][3]){
+    int return_value = 0;
+    for(int i = 0; i < 3; i++){
+        for(int j = 0; j < 3; j++){
+            if(j + 1 < 3 && board[i][j] == board[i][j+1] && board[i][j] != 0){
+                return_value = 2;
+            }
+            else if(i + 1 < 3 && board[i][j] == board[i+1][j] && board[i][j] != 0){
+                return_value = 2;
+            } 
+            if(board[i][j] == 512){
+                return 1;
+            }
+        }
+    }
+    return return_value;
+}
+
+
 int main(){
     int game_board[3][3] = {{0,0,0}, {0,0,0}, {0,0,0}};
     printf("Choose [1] or [2]: \n[1] New Game\n[2] Start from a State\n");
