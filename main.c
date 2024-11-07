@@ -30,7 +30,7 @@ void add_random_two_to_board(int board[][3]){
     board[i][j] = 2;
 }
 
-void check_win_state(int board[][3]){
+int check_win_state(int board[][3]){
     int return_value = 0;
     for(int i = 0; i < 3; i++){
         for(int j = 0; j < 3; j++){
@@ -48,12 +48,71 @@ void check_win_state(int board[][3]){
     return return_value;
 }
 
+void swipe_board(char input, int board[][3]){
+    if(input == 'W'){
+        for(int i = 0; i < 3; i++){
+            for(int j = 2; j >= 1; j--){
+                int c = j;
+                while(c >= 0){
+                    if(board[c-1][i] == 0 || board[c-1][i] == board[c][i]){
+                        board[c-1][i] += board[c][i];
+                        board[c][i] = 0;
+                    }
+                    c--;
+                }
+            }
+        }
+    }
+    else if(input == 'A'){
+        for(int i = 0; i < 3; i++){
+            for(int j = 2; j >= 1; j--){
+                int c = j;
+                while(c >= 0){
+                    if(board[i][c-1] == 0 || board[i][c-1] == board[i][c]){
+                        board[i][c-1] += board[i][c];
+                        board[i][c] = 0;
+                    }
+                    c--;
+                }
+            }
+        }
+    }
+    else if(input == 'S'){
+        for(int i = 0; i < 3; i++){
+            for(int j = 1; j >= 0; j--){
+                int c = j;
+                while(c <= 2){
+                    if(board[c+1][i] == 0 || board[c+1][i] == board[c][i]){
+                        board[c+1][i] += board[c][i];
+                        board[c][i] = 0;
+                    }
+                    c++;
+                }
+            }
+        }
+    }
+    else{
+        for(int i = 0; i < 3; i++){
+            for(int j = 0; j <= 1; j++){
+                int c = j;
+                while(c <= 1){
+                    if(board[i][c+1] == 0 || board[i][c+1] == board[i][c]){
+                        board[i][c+1] += board[i][c];
+                        board[i][c] = 0;
+                    }
+                    c++;
+                }
+            }
+        }
+    }
+}
 
 int main(){
-    int game_board[3][3] = {{0,0,0}, {0,0,0}, {0,0,0}};
+    int game_board[3][3] = {{0,0,0}, {0,2,0}, {0,2,2}};
     printf("Choose [1] or [2]: \n[1] New Game\n[2] Start from a State\n");
     int new_game_input;
     scanf("%d", &new_game_input);
-    add_random_two_to_board(game_board);
+    print_game_board(game_board);
+    swipe_board('D', game_board);
     print_game_board(game_board);
 }
