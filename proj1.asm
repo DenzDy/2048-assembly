@@ -174,16 +174,33 @@ end_print_loop:
 	
 	
 	
-.macro 
-
-
+.macro check_if_board_is_full()
+	li $t0, 0
+	li $t4, 0
+	li $v0, 0
+	li $t5, 8
+	loop:
+		addi $t0, $t4, 0
+		addi	$t1, $0, 4	# set t0 to 4 for multiplication
+		mul	$t0, $t4, $t1	# multiply offset by 4, store in $t0
+		get_cell_value($t0, $t3)
+		beq $t3, $0, zero_found
+		addi $t4, $t4, 1
+	blt $t4, $t5, loop
+	li $v0, 0
+	b end
+	
+	zero_found:
+		li $v0, 1
+	end:
+	
+.end_macro
 .text
 main:
 	jal start_game
 	j end_program
 	
 start_game:
-	
 	print_str_input(start_msg)
 	get_int_input($t0)
 	addi	$t1, $0, 1
@@ -206,11 +223,17 @@ new_game_loop:
 	addi	$t2, $0, 2
 	#set_cell_value($t0, $t2)	# set the cell with offset t0 to value in t3
 	#print_grid()
-	add_random_two_to_board()
-	print_grid()
+	game_loop:
+	check_if_board_is_full()
+	beq $v0, $0, end                # placeholder
+	print_num($v0) 
 	add_random_two_to_board()
 	print_grid()
 	reset_registers()
+	
+	j game_loop
+	
+	end:
 	jr	$ra
 	
 custom_game_loop_start:
