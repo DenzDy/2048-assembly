@@ -225,8 +225,7 @@ new_game_loop:
 	#print_grid()
 	game_loop:
 	check_if_board_is_full()
-	beq $v0, $0, end                # placeholder
-	print_num($v0) 
+	beq $v0, $0, end                # placeholder for conditional to allow new random two
 	add_random_two_to_board()
 	print_grid()
 	reset_registers()
