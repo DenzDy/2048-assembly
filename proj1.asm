@@ -130,9 +130,13 @@ end_print_loop:
 	li $a1, 1000
 	li $v0, 42
 	syscall
-	
 	div $a0, %x
 	mfhi $a0
+.end_macro
+
+.macro get_cell_value(%x, %y)   # x: offset, y: return register
+	add	%x, %x, $s0	# add offset and base register, store in t0
+	lw 	%y, (%x)	# set cell value with offset %x to %y
 .end_macro
 
 .macro set_cell_value(%x, %y)	# x: offset, y: value
@@ -155,6 +159,24 @@ end_print_loop:
 	addi	$t9, $0, 0
 .end_macro
 
+.macro add_random_two_to_board()
+	loop:
+		addi	$t0, $0, 9	# for rand modulo
+		get_rand($t0)		# generates random position
+		addi	$t1, $0, 4	# set t0 to 4 for multiplication
+		mul	$t0, $a0, $t1	# multiply offset by 4, store in $t0
+		addi	$t2, $0, 2
+		addi $t1, $t0, 0        # save current offset to $t1 resgiter for get_cell_value.
+		get_cell_value($t1, $t3)
+	bne $t3, $0, loop               # checks if randomly picked cell is not empty. Loops if it is not empty
+	set_cell_value($t0, $t2)	# set the cell with offset t0 to value in t3
+.end_macro
+	
+	
+	
+.macro 
+
+
 .text
 main:
 	jal start_game
@@ -168,7 +190,7 @@ start_game:
 	addi	$t2, $0, 2
 	beq	$t0, $t1, new_game_loop
 	beq	$t0, $t2, custom_game_loop_start
-
+	
 new_game_loop:
 	addi	$t0, $0, 9	# for rand modulo
 	get_rand($t0)		# generates random position
@@ -182,9 +204,12 @@ new_game_loop:
 	
 	move	$s0, $v0	# stores CELL 0 address in $s0
 	addi	$t2, $0, 2
-	set_cell_value($t0, $t2)	# set the cell with offset t0 to value in t3
+	#set_cell_value($t0, $t2)	# set the cell with offset t0 to value in t3
+	#print_grid()
+	add_random_two_to_board()
 	print_grid()
-	
+	add_random_two_to_board()
+	print_grid()
 	reset_registers()
 	jr	$ra
 	
