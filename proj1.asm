@@ -15,6 +15,60 @@
 	syscall
 .end_macro
 
+.macro check_win_state()
+	li $t0, 0 # row iterator
+	li $s7, 3 # game board size
+	li $s4, 4
+	li $v0, 0
+	outer_loop:
+	beq $t0, 2, end
+	li $t1, 0 # column iterator
+	inner_loop:
+	beq $t1, 2 inner_loop_end
+	
+	# calculate current cell address
+	mul $t2, $s7, $t0
+	add $t2, $t2, $t1
+	mul $t2, $t2, $s4
+	
+	# calculate cell horizontally adjacent address
+	mul $t3, $s7, $t0
+	add $t3, $t3, $t1
+	addi $t3, $t3, 1
+	mul $t3, $t3, $s4
+	
+	# calculate cell with vertically adjacent address
+	addi $t4, $t0, 1
+	mul $t4, $s7, $t4
+	add $t4, $t4, $t1
+	mul $t4, $t4, $s4
+
+	# get cell values
+	get_cell_value($t2, $t2)
+	get_cell_value($t3, $t3)
+	get_cell_value($t4, $t4)
+	
+	# conditionals
+	beq $t2, $t3, return_2
+	beq $t2, $t4, return_2
+	beq $t2, 0, return_2
+	loop_return:
+	beq $t2, 512, return_1
+	addi $t1, $t1, 1
+	j inner_loop
+	inner_loop_end:
+	addi $t0, $t0, 1
+	j outer_loop 
+		
+	return_1:
+	li $v0, 1
+	j end
+	return_2:
+	li $v0, 2
+	j loop_return
+	end:
+.end_macro
+	
 .macro move_up()
 	li $t0, 0 # row iterator
 	li $s7, 3 # game board size
@@ -353,7 +407,7 @@ end_print_loop:
 .macro check_if_board_is_full()
 	li $t0, 0
 	li $t4, 0
-	li $v0, 0
+	li $v0, 1
 	li $t5, 8
 	loop:
 		addi $t0, $t4, 0
@@ -367,7 +421,7 @@ end_print_loop:
 	b end
 	
 	zero_found:
-		li $v0, 1
+		li $v0, 0
 	end:
 	
 .end_macro
@@ -412,32 +466,45 @@ custom_game_loop_start:
 	move	$s0, $v0
 	
 custom_game_loop:
-	beq	$t0, $t1, cg_loop	# exit loop
+	beq	$t0, $t1, after_add	# exit loop
 	get_int_input($t3)	# get value to set cell
 	mul	$t5, $t2, $t0	# get proper offset for set_cell_value
 	set_cell_value($t5, $t3)	# set the cell with offset t5 to value in t3
 	addi	$t0, $t0, 1	# i = i + 1
 	b	custom_game_loop
-	
+
+add_random_two_cg:
+	add_random_two_to_board()
+	j after_add  
+			
 init_cg_loop_random:
 	add_random_two_to_board()
+	j after_add
+
 
 cg_loop:
-	print_grid()
 	check_if_board_is_full()
-	beq $v0, $0, end_program                # placeholder for conditional to allow new random two
+	beq $v0, 0, add_random_two_cg              # placeholder for conditional to allow new random two
+after_add:
+	check_win_state()
+	beq $v0, 1, win
+	beq $v0, 0, lose
 
-	move_right()
 	print_grid()
-	move_up()
-	print_grid()
-	move_left()
-	print_grid()
-	move_down()
-	print_grid()
+	
 	reset_registers()
 	jr $ra
-	
+
+win:
+	li $t0, 1
+	print_num($t0)
+	j end_program
+
+lose:
+        li $t0, 0
+	print_num($t0)
+	j end_program
+
 end_program:
 	li $v0, 10
 	syscall
