@@ -59,6 +59,137 @@
 	end:				
 .end_macro
 	
+.macro move_down()
+	li $t0, 0 # row iterator
+	li $s7, 3 # game board size
+	li $s4, 4
+	outer_loop_1:
+	beq $t0, 3, end
+	li $t1, 1 # column iterator
+	outer_loop_2:
+	beq $t1, -1, end_outer_loop_2
+	addi $t3, $t1, 0 # checker iterator
+	inner_loop:
+	beq $t3, 2, end_inner
+	# compute for previous cell address
+	addi $t3, $t3, 1
+	mul $t4, $s7, $t3
+	addi $t3, $t3, -1
+	add $t4, $t4, $t0 # t4 stores next cell value
+	mul $t4, $t4, $s4 # get address offset
+	get_cell_value($t4, $t6) # next cell value
+	# compute for current cell address
+	mul $t5, $s7, $t3
+	add $t5, $t5, $t0 # t5 stores current cell value
+	mul $t5, $t5, $s4 # get address offset
+	get_cell_value($t5, $t7) # current cell value
+	beq $t6, 0, switching
+	beq $t6, $t7, switching
+	j fail_conditional
+	switching:
+	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
+	li $t7, 0 # board[k][i] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	fail_conditional:
+	addi $t3, $t3, 1
+	j inner_loop
+	end_inner:
+	addi $t1, $t1, -1
+	j outer_loop_2		
+	end_outer_loop_2:
+	addi $t0, $t0, 1	
+	j outer_loop_1											
+	end:				
+.end_macro
+
+.macro move_left()
+	li $t0, 0 # row iterator
+	li $s7, 3 # game board size
+	li $s4, 4
+	outer_loop_1:
+	beq $t0, 3, end
+	li $t1, 1 # column iterator
+	outer_loop_2:
+	beq $t1, 3, end_outer_loop_2
+	addi $t3, $t1, 0 # checker iterator
+	inner_loop:
+	beqz $t3, end_inner
+	# compute for previous cell address
+	addi $t3, $t3, -1
+	mul $t4, $s7, $t0
+	add $t4, $t4, $t3 # t4 stores previous cell value
+	addi $t3, $t3, 1
+	mul $t4, $t4, $s4 # get address offset
+	get_cell_value($t4, $t6) # previous cell value
+	# compute for current cell address
+	mul $t5, $s7, $t0
+	add $t5, $t5, $t3 # t5 stores current cell value
+	mul $t5, $t5, $s4 # get address offset
+	get_cell_value($t5, $t7) # current cell value
+	beq $t6, 0, switching
+	beq $t6, $t7, switching
+	j fail_conditional
+	switching:
+	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
+	li $t7, 0 # board[k][i] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	fail_conditional:
+	addi $t3, $t3, -1
+	j inner_loop
+	end_inner:
+	addi $t1, $t1, 1
+	j outer_loop_2		
+	end_outer_loop_2:
+	addi $t0, $t0, 1	
+	j outer_loop_1											
+	end:				
+.end_macro
+
+.macro move_right()
+	li $t0, 0 # row iterator
+	li $s7, 3 # game board size
+	li $s4, 4
+	outer_loop_1:
+	beq $t0, 3, end
+	li $t1, 1 # column iterator
+	outer_loop_2:
+	beq $t1, -1, end_outer_loop_2
+	addi $t3, $t1, 0 # checker iterator
+	inner_loop:
+	beq $t3, 2, end_inner
+	# compute for previous cell address
+	addi $t3, $t3, 1
+	mul $t4, $s7, $t0
+	add $t4, $t4, $t3 # t4 stores next cell value
+	addi $t3, $t3, -1
+	mul $t4, $t4, $s4 # get address offset
+	get_cell_value($t4, $t6) # next cell value
+	# compute for current cell address
+	mul $t5, $s7, $t0
+	add $t5, $t5, $t3 # t5 stores current cell value
+	mul $t5, $t5, $s4 # get address offset
+	get_cell_value($t5, $t7) # current cell value
+	beq $t6, 0, switching
+	beq $t6, $t7, switching
+	j fail_conditional
+	switching:
+	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
+	li $t7, 0 # board[k][i] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	fail_conditional:
+	addi $t3, $t3, 1
+	j inner_loop
+	end_inner:
+	addi $t1, $t1, -1
+	j outer_loop_2		
+	end_outer_loop_2:
+	addi $t0, $t0, 1	
+	j outer_loop_1											
+	end:				
+.end_macro
 
 .macro get_str_input(%dest, %char_size)
     li $v0, 8 
@@ -296,7 +427,13 @@ cg_loop:
 	check_if_board_is_full()
 	beq $v0, $0, end_program                # placeholder for conditional to allow new random two
 
+	move_right()
+	print_grid()
 	move_up()
+	print_grid()
+	move_left()
+	print_grid()
+	move_down()
 	print_grid()
 	reset_registers()
 	jr $ra
