@@ -134,7 +134,6 @@
 	li $t1, 1 # column iterator
 	li $t2, 0
 	outer_loop_2:
-
 	beq $t1, -1, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
 
@@ -193,7 +192,6 @@
 	li $t1, 1 # column iterator
 	li $t2, 0
 	outer_loop_2:
-
 	beq $t1, 3, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
 
@@ -480,9 +478,92 @@ end_print_loop:
 	end:
 	
 .end_macro
+
+.macro ask_for_move()
+	li	$s4, 4		# sets s4 to the constant 4
+start_ask_for_move:
+	li $v0, 4            # System call for print_string
+	la $a0, movement_prompt       # Load address of prompt string
+	syscall
+	
+	li $v0, 12
+	syscall
+	
+	move	$t0, $v0
+	
+	li	$t1, 87		# ASCII FOR W
+	subu	$t2, $t1, $t0	# is INPUT equal to W?
+	beq	$t2, $0, w_input
+	
+	li	$t1, 65		# ASCII FOR A
+	subu	$t2, $t1, $t0	# is INPUT equal to A?
+	beq	$t2, $0, a_input
+	
+	li	$t1, 83		# ASCII FOR S
+	subu	$t2, $t1, $t0	# is INPUT equal to S?
+	beq	$t2, $0, s_input
+	
+	li	$t1, 68		# ASCII FOR D
+	subu	$t2, $t1, $t0	# is INPUT equal to D?
+	beq	$t2, $0, d_input
+	
+	li	$t1, 88		# ASCII FOR X
+	subu	$t2, $t1, $t0	# is INPUT equal to X?
+	beq	$t2, $0, x_input
+	
+	li	$t1, 51		# ASCII FOR 3
+	subu	$t2, $t1, $t0	# is INPUT equal to 3?
+	beq	$t2, $0, disable_random
+	
+	li	$t1, 52		# ASCII FOR 4
+	subu	$t2, $t1, $t0	# is INPUT equal to 4?
+	beq	$t2, $0, enable_random
+	
+	b start_ask_for_move
+	
+w_input:
+	move_up()
+	reset_registers()
+	b end_movement
+	
+a_input:
+	move_left()
+	reset_registers()
+	b end_movement
+	
+s_input:
+	move_down()
+	reset_registers()
+	b end_movement
+	
+d_input:
+	move_right()
+	reset_registers()
+	b end_movement
+	
+x_input:
+	li $v0, 10
+	syscall
+	
+enable_random:
+	reset_registers()
+	print_grid()
+	b main_game_loop_random
+	
+disable_random:
+	reset_registers()
+	print_grid()
+	b main_game_loop_no_random
+	
+end_movement:
+	
+.end_macro
+
+
 .text
 main:
 	jal start_game
+	jal main_game_loop_random
 	j end_program
 	
 start_game:
@@ -546,20 +627,37 @@ after_add:
 	beq $v0, 0, lose
 
 	print_grid()
-	move_up()
+	# move_down()
 	print_num($v0)
 	print_grid()
 	reset_registers()
 	jr $ra
 
+main_game_loop_random:
+	subu	$sp, $sp, 4
+	sw	$ra, ($sp)
+	ask_for_move()
+	add_random_two_to_board()
+	print_grid()
+	check_win_state()
+	
+	b main_game_loop_random
+	
+main_game_loop_no_random:
+	ask_for_move()
+	print_grid()
+	check_win_state()
+	
+	b main_game_loop_no_random
+	
 win:
-	li $t0, 1
-	print_num($t0)
+	print_grid()
+	print_str_input(win_msg)
 	j end_program
 
 lose:
-        li $t0, 0
-	print_num($t0)
+	print_grid()
+        print_str_input(lose_msg)
 	j end_program
 
 end_program:
@@ -583,3 +681,9 @@ two_eight: .asciiz "256"
 two_nine: .asciiz "512"
 
 start_msg: .asciiz "Choose [1] or [2]\n[1] New Game\n[2] Start from a State\n"
+movement_prompt: .asciiz "\nEnter a move\n"
+win_msg: .asciiz "\nCongratulations! You have reached the 512 tile!\n"
+lose_msg: .asciiz "\nGame over.\n"
+test: .asciiz "\ntest\n"
+3_msg: .asciiz "\nNew tile generation disabled.\n"
+4_msg: .asciiz "\nNew tile generation enabled.\n"
