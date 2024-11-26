@@ -592,6 +592,7 @@ new_game_loop:
 	j init_cg_loop_random
 	
 custom_game_loop_start:
+	print_str_input(configuration_prompt)
 	addi	$t0, $0, 0	# loop initial value
 	addi	$t1, $0, 9	# loop guard
 	addi	$t2, $0, 4	# for multiplication
@@ -681,7 +682,8 @@ two_eight: .asciiz "256"
 two_nine: .asciiz "512"
 
 start_msg: .asciiz "Choose [1] or [2]\n[1] New Game\n[2] Start from a State\n"
-movement_prompt: .asciiz "\nEnter a move\n"
+movement_prompt: .asciiz "\nEnter a move:\n"
+configuration_prompt: "\nEnter a board configuration:\n"
 win_msg: .asciiz "\nCongratulations! You have reached the 512 tile!\n"
 lose_msg: .asciiz "\nGame over.\n"
 test: .asciiz "\ntest\n"
