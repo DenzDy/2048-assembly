@@ -77,8 +77,8 @@
 	outer_loop_1:
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
-	outer_loop_2:
 	li $t2, 0
+	outer_loop_2:
 	beq $t1, 3, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
 	inner_loop:
@@ -132,8 +132,9 @@
 	outer_loop_1:
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
-	outer_loop_2:
 	li $t2, 0
+	outer_loop_2:
+
 	beq $t1, -1, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
 
@@ -190,8 +191,9 @@
 	outer_loop_1:
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
-	outer_loop_2:
 	li $t2, 0
+	outer_loop_2:
+
 	beq $t1, 3, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
 
@@ -248,8 +250,9 @@
 	outer_loop_1:
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
-	outer_loop_2:
 	li $t2, 0
+	outer_loop_2:
+	
 	beq $t1, -1, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
 	inner_loop:
@@ -543,7 +546,7 @@ after_add:
 	beq $v0, 0, lose
 
 	print_grid()
-	move_left()
+	move_up()
 	print_num($v0)
 	print_grid()
 	reset_registers()
