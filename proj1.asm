@@ -491,33 +491,24 @@ start_ask_for_move:
 	
 	move	$t0, $v0
 	
-	li	$t1, 87		# ASCII FOR W
-	subu	$t2, $t1, $t0	# is INPUT equal to W?
-	beq	$t2, $0, w_input
+	beq	$t0, 87, w_input	# ASCII FOR W
+	beq	$t0, 119, w_input	# ASCII FOR w
 	
-	li	$t1, 65		# ASCII FOR A
-	subu	$t2, $t1, $t0	# is INPUT equal to A?
-	beq	$t2, $0, a_input
+	beq	$t0, 65, a_input	# ASCII FOR A
+	beq	$t0, 97, a_input	# ASCII FOR a
 	
-	li	$t1, 83		# ASCII FOR S
-	subu	$t2, $t1, $t0	# is INPUT equal to S?
-	beq	$t2, $0, s_input
+	beq	$t0, 83, s_input	# ASCII FOR S
+	beq	$t0, 115, s_input	# ASCII FOR s
 	
-	li	$t1, 68		# ASCII FOR D
-	subu	$t2, $t1, $t0	# is INPUT equal to D?
-	beq	$t2, $0, d_input
+	beq	$t0, 68, d_input	# ASCII FOR D
+	beq	$t0, 100, d_input	# ASCII FOR d
 	
-	li	$t1, 88		# ASCII FOR X
-	subu	$t2, $t1, $t0	# is INPUT equal to X?
-	beq	$t2, $0, x_input
+	beq	$t0, 88, x_input	# ASCII FOR X
+	beq	$t0, 120, x_input	# ASCII FOR x
 	
-	li	$t1, 51		# ASCII FOR 3
-	subu	$t2, $t1, $t0	# is INPUT equal to 3?
-	beq	$t2, $0, disable_random
+	beq	$t0, 51, disable_random	# ASCII FOR 3
 	
-	li	$t1, 52		# ASCII FOR 4
-	subu	$t2, $t1, $t0	# is INPUT equal to 4?
-	beq	$t2, $0, enable_random
+	beq	$t0, 52, enable_random	# ASCII FOR 4
 	
 	b start_ask_for_move
 	
@@ -548,11 +539,15 @@ x_input:
 enable_random:
 	reset_registers()
 	print_grid()
+	print_str_input(newtile_msg)
+	
 	b main_game_loop_random
 	
 disable_random:
 	reset_registers()
 	print_grid()
+	print_str_input(newtiledisable_msg)
+	
 	b main_game_loop_no_random
 	
 end_movement:
@@ -682,10 +677,9 @@ two_eight: .asciiz "256"
 two_nine: .asciiz "512"
 
 start_msg: .asciiz "Choose [1] or [2]\n[1] New Game\n[2] Start from a State\n"
-movement_prompt: .asciiz "\nEnter a move:\n"
+movement_prompt: .asciiz "Enter a move:\n"
 configuration_prompt: "\nEnter a board configuration:\n"
 win_msg: .asciiz "\nCongratulations! You have reached the 512 tile!\n"
 lose_msg: .asciiz "\nGame over.\n"
-test: .asciiz "\ntest\n"
-3_msg: .asciiz "\nNew tile generation disabled.\n"
-4_msg: .asciiz "\nNew tile generation enabled.\n"
+newtile_msg: .asciiz "New tile generation enabled.\n"
+newtiledisable_msg: .asciiz "New tile generation disabled.\n"
