@@ -78,11 +78,11 @@
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
 	outer_loop_2:
+	li $t2, 0
 	beq $t1, 3, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
-	addi $t2, $t3, -1
 	inner_loop:
-	beq $t3, $t2, end_inner
+	beq $t3, 0, end_inner
 	# compute for previous cell address
 	addi $t3, $t3, -1
 	mul $t4, $s7, $t3
@@ -95,12 +95,19 @@
 	add $t5, $t5, $t0 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
-	beq $t7, 0, fail_conditional
-	beq $t6, 0, switching
-	beq $t6, $t7, switching
+	beq $t6, 0, move_only
+	beq $t6, $t7, check_l
 	j fail_conditional
-	switching:
+	check_l:
+	beq $t2, 1, fail_conditional
 	li $v0, 1
+	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
+	li $t7, 0 # board[k][i] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	addi $t2, $t2, 1
+	j fail_conditional
+	move_only:
 	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
 	sw $t6, 0($t4) # store to cell
@@ -126,11 +133,12 @@
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
 	outer_loop_2:
+	li $t2, 0
 	beq $t1, -1, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
-	addi $t2, $t3, 1
+
 	inner_loop:
-	beq $t3, $t2, end_inner
+	beq $t3, 2, end_inner
 	# compute for previous cell address
 	addi $t3, $t3, 1
 	mul $t4, $s7, $t3
@@ -143,11 +151,20 @@
 	add $t5, $t5, $t0 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
-	beq $t7, 0, fail_conditional
-	beq $t6, 0, switching
-	beq $t6, $t7, switching
+	beq $t6, 0, move_only
+	beq $t6, $t7, check_l
 	j fail_conditional
+	check_l:
+	beq $t2, 1, fail_conditional
 	switching:
+	li $v0, 1
+	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
+	li $t7, 0 # board[k][i] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	addi $t2, $t2, 1
+	j fail_conditional
+	move_only:
 	li $v0, 1
 	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
@@ -174,11 +191,12 @@
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
 	outer_loop_2:
+	li $t2, 0
 	beq $t1, 3, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
-	addi $t2, $t3, -1
+
 	inner_loop:
-	beq $t3, $t2, end_inner
+	beq $t3, 0, end_inner
 	# compute for previous cell address
 	addi $t3, $t3, -1
 	mul $t4, $s7, $t0
@@ -191,11 +209,20 @@
 	add $t5, $t5, $t3 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
-	beq $t7, 0, fail_conditional
-	beq $t6, 0, switching
-	beq $t6, $t7, switching
+	beq $t6, 0, move_only
+	beq $t6, $t7, check_l
 	j fail_conditional
+	check_l:
+	beq $t2, 1, fail_conditional
 	switching:
+	li $v0, 1
+	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
+	li $t7, 0 # board[k][i] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	addi $t2, $t2, 1
+	j fail_conditional
+	move_only:
 	li $v0, 1
 	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
@@ -222,11 +249,11 @@
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
 	outer_loop_2:
+	li $t2, 0
 	beq $t1, -1, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
-	addi $t2, $t3, 1
 	inner_loop:
-	beq $t3, $t2, end_inner
+	beq $t3, 2, end_inner
 	# compute for previous cell address
 	addi $t3, $t3, 1
 	mul $t4, $s7, $t0
@@ -239,11 +266,20 @@
 	add $t5, $t5, $t3 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
-	beq $t7, 0, fail_conditional
-	beq $t6, 0, switching
-	beq $t6, $t7, switching
+	beq $t6, 0, move_only
+	beq $t6, $t7, check_l
 	j fail_conditional
+	check_l:
+	beq $t2, 1, fail_conditional
 	switching:
+	li $v0, 1
+	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
+	li $t7, 0 # board[k][i] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	addi $t2, $t2, 1
+	j fail_conditional
+	move_only:
 	li $v0, 1
 	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
@@ -507,7 +543,7 @@ after_add:
 	beq $v0, 0, lose
 
 	print_grid()
-	move_down()
+	move_left()
 	print_num($v0)
 	print_grid()
 	reset_registers()

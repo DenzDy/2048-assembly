@@ -75,13 +75,18 @@ int check_win_state(int board[][3]){
 int swipe_board(char input, int board[][3], int prev_swipe){
     if(input == 'W'){
         for(int i = 0; i < 3; i++){
+            int l = 0;
             for(int j = 1; j <= 2; j++){
                 int k = j;
-                int l = k - 1;
-                while(k > l){
-                    if(board[k-1][i] == 0 || board[k-1][i] == board[k][i]){
+                while(k > 0){
+                    if(board[k-1][i] == 0){
                         board[k-1][i] += board[k][i];
                         board[k][i] = 0;
+                    }
+                    else if(board[k-1][i] == board[k][i] && l < 1){
+                        board[k-1][i] += board[k][i];
+                        board[k][i] = 0;
+                        l++;
                     }
                     k--;
                 }
@@ -121,13 +126,18 @@ int swipe_board(char input, int board[][3], int prev_swipe){
     }
     else if(input == 'D'){
         for(int i = 0; i < 3; i++){
+            int l = 0;
             for(int j = 1; j >= 0; j--){
                 int k = j;
-                int l = k+1;
-                while(k < l){
-                    if(board[i][k+1] == 0 || board[i][k+1] == board[i][k]){
+                while(k < 2){
+                    if(board[i][k+1] == 0 ){
                         board[i][k+1] += board[i][k];
                         board[i][k] = 0;
+                    }
+                    else if(board[i][k+1] == board[i][k] && l < 1){
+                        board[i][k+1] += board[i][k];
+                        board[i][k] = 0;
+                        l++;
                     }
                     k++;
                 }
@@ -171,7 +181,7 @@ int main(){
         char swipe_input;
         if(check_if_board_is_full(game_board) == 0 && new_game_input == 1 && (swipe_return != 1))
         {
-            add_random_two_to_board(game_board);
+            // add_random_two_to_board(game_board);
         }
         if(swipe_return == -1){
             return 0;
