@@ -514,23 +514,31 @@ start_ask_for_move:
 	
 w_input:
 	move_up()
+	beq	$v0, 1, end_movement
 	reset_registers()
-	b end_movement
+	print_grid()
+	b start_ask_for_move
 	
 a_input:
 	move_left()
+	beq	$v0, 1, end_movement
 	reset_registers()
-	b end_movement
+	print_grid()
+	b start_ask_for_move
 	
 s_input:
 	move_down()
+	beq	$v0, 1, end_movement
 	reset_registers()
-	b end_movement
+	print_grid()
+	b start_ask_for_move
 	
 d_input:
 	move_right()
+	beq	$v0, 1, end_movement
 	reset_registers()
-	b end_movement
+	print_grid()
+	b start_ask_for_move
 	
 x_input:
 	li $v0, 10
@@ -572,7 +580,7 @@ start_game:
 new_game_loop:
 	addi	$t0, $0, 9	# for rand modulo
 	get_rand($t0)		# generates random position
-	print_num($a0)		# print random num (0 to 9 for offset)
+	# print_num($a0)		# print random num (0 to 9 for offset)
 	
 	addi	$t1, $0, 4	# set t0 to 4 for multiplication
 	mul	$t0, $a0, $t1	# multiply offset by 4, store in $t0
@@ -624,7 +632,7 @@ after_add:
 
 	print_grid()
 	# move_down()
-	print_num($v0)
+	# print_num($v0)
 	print_grid()
 	reset_registers()
 	jr $ra
@@ -636,6 +644,8 @@ main_game_loop_random:
 	add_random_two_to_board()
 	print_grid()
 	check_win_state()
+	beq	$v0, 1, win
+	beq	$v0, 0, lose
 	
 	b main_game_loop_random
 	
@@ -643,6 +653,8 @@ main_game_loop_no_random:
 	ask_for_move()
 	print_grid()
 	check_win_state()
+	beq	$v0, 1, win
+	beq	$v0, 0, lose
 	
 	b main_game_loop_no_random
 	
