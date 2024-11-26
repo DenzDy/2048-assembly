@@ -73,6 +73,7 @@
 	li $t0, 0 # row iterator
 	li $s7, 3 # game board size
 	li $s4, 4
+	li $v0, 0
 	outer_loop_1:
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
@@ -94,10 +95,12 @@
 	add $t5, $t5, $t0 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
+	beq $t7, 0, fail_conditional
 	beq $t6, 0, switching
 	beq $t6, $t7, switching
 	j fail_conditional
 	switching:
+	li $v0, 1
 	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
 	sw $t6, 0($t4) # store to cell
@@ -118,6 +121,7 @@
 	li $t0, 0 # row iterator
 	li $s7, 3 # game board size
 	li $s4, 4
+	li $v0, 0
 	outer_loop_1:
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
@@ -139,10 +143,12 @@
 	add $t5, $t5, $t0 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
+	beq $t7, 0, fail_conditional
 	beq $t6, 0, switching
 	beq $t6, $t7, switching
 	j fail_conditional
 	switching:
+	li $v0, 1
 	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
 	sw $t6, 0($t4) # store to cell
@@ -163,6 +169,7 @@
 	li $t0, 0 # row iterator
 	li $s7, 3 # game board size
 	li $s4, 4
+	li $v0, 0
 	outer_loop_1:
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
@@ -184,10 +191,12 @@
 	add $t5, $t5, $t3 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
+	beq $t7, 0, fail_conditional
 	beq $t6, 0, switching
 	beq $t6, $t7, switching
 	j fail_conditional
 	switching:
+	li $v0, 1
 	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
 	sw $t6, 0($t4) # store to cell
@@ -208,6 +217,7 @@
 	li $t0, 0 # row iterator
 	li $s7, 3 # game board size
 	li $s4, 4
+	li $v0, 0
 	outer_loop_1:
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
@@ -229,10 +239,12 @@
 	add $t5, $t5, $t3 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
+	beq $t7, 0, fail_conditional
 	beq $t6, 0, switching
 	beq $t6, $t7, switching
 	j fail_conditional
 	switching:
+	li $v0, 1
 	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
 	sw $t6, 0($t4) # store to cell
@@ -496,6 +508,7 @@ after_add:
 
 	print_grid()
 	move_down()
+	print_num($v0)
 	print_grid()
 	reset_registers()
 	jr $ra
