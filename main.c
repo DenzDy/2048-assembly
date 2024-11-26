@@ -77,7 +77,8 @@ int swipe_board(char input, int board[][3], int prev_swipe){
         for(int i = 0; i < 3; i++){
             for(int j = 1; j <= 2; j++){
                 int k = j;
-                while(k > 0){
+                int l = k - 1;
+                while(k > l){
                     if(board[k-1][i] == 0 || board[k-1][i] == board[k][i]){
                         board[k-1][i] += board[k][i];
                         board[k][i] = 0;
@@ -91,7 +92,8 @@ int swipe_board(char input, int board[][3], int prev_swipe){
         for(int i = 0; i < 3; i++){
             for(int j = 1; j <= 2; j++){
                 int k = j;
-                while(k > 0){
+                int l = k-1;
+                while(k > l){
                     if(board[i][k-1] == 0 || board[i][k-1] == board[i][k]){
                         board[i][k-1] += board[i][k];
                         board[i][k] = 0;
@@ -105,7 +107,8 @@ int swipe_board(char input, int board[][3], int prev_swipe){
         for(int i = 0; i < 3; i++){
             for(int j = 1; j >= 0; j--){
                 int k = j;
-                while(k < 2){
+                int l = k+1;
+                while(k < l){
                     if(board[k+1][i] == 0 || board[k+1][i] == board[k][i]){
                         board[k+1][i] += board[k][i];
                         board[k][i] = 0;
@@ -120,7 +123,8 @@ int swipe_board(char input, int board[][3], int prev_swipe){
         for(int i = 0; i < 3; i++){
             for(int j = 1; j >= 0; j--){
                 int k = j;
-                while(k < 2){
+                int l = k+1;
+                while(k < l){
                     if(board[i][k+1] == 0 || board[i][k+1] == board[i][k]){
                         board[i][k+1] += board[i][k];
                         board[i][k] = 0;

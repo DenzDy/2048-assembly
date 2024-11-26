@@ -79,8 +79,9 @@
 	outer_loop_2:
 	beq $t1, 3, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
+	addi $t2, $t3, -1
 	inner_loop:
-	beqz $t3, end_inner
+	beq $t3, $t2, end_inner
 	# compute for previous cell address
 	addi $t3, $t3, -1
 	mul $t4, $s7, $t3
@@ -123,8 +124,9 @@
 	outer_loop_2:
 	beq $t1, -1, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
+	addi $t2, $t3, 1
 	inner_loop:
-	beq $t3, 2, end_inner
+	beq $t3, $t2, end_inner
 	# compute for previous cell address
 	addi $t3, $t3, 1
 	mul $t4, $s7, $t3
@@ -167,8 +169,9 @@
 	outer_loop_2:
 	beq $t1, 3, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
+	addi $t2, $t3, -1
 	inner_loop:
-	beqz $t3, end_inner
+	beq $t3, $t2, end_inner
 	# compute for previous cell address
 	addi $t3, $t3, -1
 	mul $t4, $s7, $t0
@@ -211,8 +214,9 @@
 	outer_loop_2:
 	beq $t1, -1, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
+	addi $t2, $t3, 1
 	inner_loop:
-	beq $t3, 2, end_inner
+	beq $t3, $t2, end_inner
 	# compute for previous cell address
 	addi $t3, $t3, 1
 	mul $t4, $s7, $t0
@@ -491,7 +495,8 @@ after_add:
 	beq $v0, 0, lose
 
 	print_grid()
-	
+	move_down()
+	print_grid()
 	reset_registers()
 	jr $ra
 
