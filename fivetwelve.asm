@@ -509,46 +509,46 @@ start_ask_for_move:
 	
 	la $t1, move_w
 	lb $t1, 0($t1)
-	beq	$t0, $t1, w_input	# ASCII FOR W
+	beq	$t0, $t1, w_input	# checks if input matches move_w string
 	la $t1, move_wc
 	lb $t1, 0($t1)
-	beq	$t0, $t1, w_input	# ASCII FOR w
+	beq	$t0, $t1, w_input	# checks if input matches move_wc string
 
 	la $t1, move_a
 	lb $t1, 0($t1)
-	beq	$t0, $t1, a_input	# ASCII FOR A
+	beq	$t0, $t1, a_input	# checks if input matches move_a string
 	la $t1, move_ac
 	lb $t1, 0($t1)
-	beq	$t0, $t1, a_input	# ASCII FOR a
+	beq	$t0, $t1, a_input	# checks if input matches move_ac string
 	
 	la $t1, move_s
 	lb $t1, 0($t1)
-	beq	$t0, $t1, s_input	# ASCII FOR S
+	beq	$t0, $t1, s_input	# checks if input matches move_s string
 	la $t1, move_sc
 	lb $t1, 0($t1)
-	beq	$t0, $t1, s_input	# ASCII FOR s
+	beq	$t0, $t1, s_input	# checks if input matches move_sc string
 
 	la $t1, move_d
 	lb $t1, 0($t1)
-	beq	$t0, $t1, d_input	# ASCII FOR D
+	beq	$t0, $t1, d_input	# checks if input matches move_d string
 	la $t1, move_dc
 	lb $t1, 0($t1)
-	beq	$t0, $t1, d_input	# ASCII FOR d
+	beq	$t0, $t1, d_input	# checks if input matches move_dc string
 
-	la $t1, move_x
-	lb $t1, 0($t1)
-	beq	$t0, $t1, x_input	# ASCII FOR X
-	la $t1, move_xc
-	lb $t1, 0($t1)
-	beq	$t0, $t1, x_input	# ASCII FOR x
+	la $t1, move_x			# load move_x string address to t1
+	lb $t1, 0($t1)			# load first byte of move_x string address to get actual character
+	beq	$t0, $t1, x_input	# checks if input matches move_x string
+	la $t1, move_xc			# load move_xc string address to t1
+	lb $t1, 0($t1)			# load first byte of move_xc string address to get actual character
+	beq	$t0, $t1, x_input	# checks if input matches move_xc string
 
 	la $t1, move_3
 	lb $t1, 0($t1)
-	beq	$t0, $t1, disable_random	# ASCII FOR 3
+	beq	$t0, $t1, disable_random	# checks if input matches 3 string
 
 	la $t1, move_4
 	lb $t1, 0($t1)
-	beq	$t0, $t1, enable_random	# ASCII FOR 4
+	beq	$t0, $t1, enable_random	# checks if input matches 4 string
 	
 	b start_ask_for_move
 w_input:
@@ -689,8 +689,6 @@ after_add:
 	jr $ra
 
 main_game_loop_random:
-	subu	$sp, $sp, 4
-	sw	$ra, ($sp)
 	ask_for_move()
 	add_random_two_to_board()
 	check_win_state()
