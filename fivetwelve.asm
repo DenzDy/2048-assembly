@@ -99,11 +99,11 @@
 	add $t5, $t5, $t0 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # get current cell value
-	beq $t7, 0, fail_conditional
 	beq $t6, 0, move_only # checks if previous cell (above) is zero
 	beq $t6, $t7, check_l # check if previous cell (above) is fusable
 	j fail_conditional # jump to end of loop if conditions fail (implies no merge or move available)
 	check_l: 
+	beq $t7, 0, fail_conditional
 	beq $t2, 1, fail_conditional # stops fusing of tiles if number of fuses is already 1
 	li $v0, 1 # indicator that movement occurred (for movement input that does nothing)
 	add $t6, $t6, $t7 # adds cell above and current cell, puts sum in cell above
@@ -157,11 +157,11 @@
 	add $t5, $t5, $t0 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
-	beq $t7, 0, fail_conditional
 	beq $t6, 0, move_only
 	beq $t6, $t7, check_l
 	j fail_conditional
 	check_l:
+	beq $t7, 0, fail_conditional
 	beq $t2, 1, fail_conditional
 	switching:
 	li $v0, 1
@@ -216,11 +216,11 @@
 	add $t5, $t5, $t3 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
-	beq $t7, 0, fail_conditional
 	beq $t6, 0, move_only
 	beq $t6, $t7, check_l
 	j fail_conditional
 	check_l:
+	beq $t7, 0, fail_conditional
 	beq $t2, 1, fail_conditional
 	switching:
 	li $v0, 1
@@ -275,11 +275,11 @@
 	add $t5, $t5, $t3 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
-	beq $t7, 0, fail_conditional
 	beq $t6, 0, move_only
 	beq $t6, $t7, check_l
 	j fail_conditional
 	check_l:
+	beq $t7, 0, fail_conditional
 	beq $t2, 1, fail_conditional
 	switching:
 	li $v0, 1
