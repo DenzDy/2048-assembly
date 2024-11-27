@@ -598,7 +598,7 @@ new_game_loop:
 	
 	move	$s0, $v0	# stores CELL 0 address in $s0
 	addi	$t2, $0, 2
-	#set_cell_value($t0, $t2)	# set the cell with offset t0 to value in t3
+	set_cell_value($t0, $t2)	# set the cell with offset t0 to value in t3
 	#print_grid()
 	j init_cg_loop_random
 	
