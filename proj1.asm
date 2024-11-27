@@ -495,7 +495,12 @@ start_ask_for_move:
 	li $v0, 12
 	syscall
 	move	$t0, $v0
-
+	wait_till_enter_loop:
+	li $v0, 12
+	syscall
+	move $t1, $v0
+	bne $t1, 10, wait_till_enter_loop 
+	
 	beq	$t0, 87, w_input	# ASCII FOR W
 	beq	$t0, 119, w_input	# ASCII FOR w
 
@@ -514,7 +519,7 @@ start_ask_for_move:
 	beq	$t0, 51, disable_random	# ASCII FOR 3
 
 	beq	$t0, 52, enable_random	# ASCII FOR 4
-
+	
 	b start_ask_for_move
 w_input:
 	move_up()
