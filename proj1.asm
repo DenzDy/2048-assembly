@@ -76,68 +76,69 @@
 .macro move_up()
 	li $t0, 0 # row iterator
 	li $s7, 3 # game board size
-	li $s4, 4
-	li $v0, 0
+	li $s4, 4 # 4 for address multiplier
+	li $v0, 0 # 
 	outer_loop_1:
-	beq $t0, 3, end
+	beq $t0, 3, end # conditional for outer loop (row iteration)
 	li $t1, 1 # column iterator
-	li $t2, 0
+	li $t2, 0 # counter for amount of switches per column
 	outer_loop_2:
-	beq $t1, 3, end_outer_loop_2
-	addi $t3, $t1, 0 # checker iterator
+	beq $t1, 3, end_outer_loop_2 # conditional for outer loop (column iteration)
+	addi $t3, $t1, 0 # checker iterator (starts from middle row, goes up to bottom row)
 	inner_loop:
-	beq $t3, 0, end_inner
+	beq $t3, 0, end_inner # conditional for inner loop (adjacent (above current) cell checker)
 	# compute for previous cell address
-	addi $t3, $t3, -1
-	mul $t4, $s7, $t3
-	addi $t3, $t3, 1
+	addi $t3, $t3, -1 # decrease current cell in column to get previous cell (above current)
+	mul $t4, $s7, $t3 # converting indexes to offset (row index * board size + column index)
+	addi $t3, $t3, 1 # revert decrease for future computations of current cell
 	add $t4, $t4, $t0 # t4 stores previous cell value
-	mul $t4, $t4, $s4 # get address offset
-	get_cell_value($t4, $t6) # previous cell value
+	mul $t4, $t4, $s4 # get address offset of previous cell value
+	get_cell_value($t4, $t6) # get previous cell value
 	# compute for current cell address
-	mul $t5, $s7, $t3
+	mul $t5, $s7, $t3 # converting indexes to offset (row index * board size + column index)
 	add $t5, $t5, $t0 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
-	get_cell_value($t5, $t7) # current cell value
-	beq $t6, 0, move_only
-	beq $t6, $t7, check_l
-	j fail_conditional
-	check_l:
-	beq $t2, 1, fail_conditional
-	li $v0, 1
-	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
-	li $t7, 0 # board[k][i] = 0
-	sw $t6, 0($t4) # store to cell
-	sw $t7, 0($t5) # store to cell
-	addi $t2, $t2, 1
+	get_cell_value($t5, $t7) # get current cell value
+	beq $t7, 0, fail_conditional
+	beq $t6, 0, move_only # checks if previous cell (above) is zero
+	beq $t6, $t7, check_l # check if previous cell (above) is fusable
+	j fail_conditional # jump to end of loop if conditions fail (implies no merge or move available)
+	check_l: 
+	beq $t2, 1, fail_conditional # stops fusing of tiles if number of fuses is already 1
+	li $v0, 1 # indicator that movement occurred (for movement input that does nothing)
+	add $t6, $t6, $t7 # adds cell above and current cell, puts sum in cell above
+	li $t7, 0 # sets current cell to 0
+	sw $t6, 0($t4) # store new value to cell above current
+	sw $t7, 0($t5) # store new value to current cell
+	addi $t2, $t2, 1 # iterate fuse counter by 1 
 	j fail_conditional
 	move_only:
-	li $v0, 1
+	li $v0, 1 # indicator that movement occurred (for movement input that does nothing)
 	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
 	sw $t6, 0($t4) # store to cell
 	sw $t7, 0($t5) # store to cell
 	fail_conditional:
-	addi $t3, $t3, -1
-	j inner_loop
-	end_inner:
-	addi $t1, $t1, 1
-	j outer_loop_2		
-	end_outer_loop_2:
-	addi $t0, $t0, 1	
-	j outer_loop_1											
-	end:				
+	addi $t3, $t3, -1 # decreasee inner loop conditional by 1
+	j inner_loop # return to inner_loop label
+	end_inner: # end of inner loop
+	addi $t1, $t1, 1 # add column iterator by 1
+	j outer_loop_2	# return to outer_loop_2 label	
+	end_outer_loop_2: # end of outer loop 2
+	addi $t0, $t0, 1 # add row iterator by 1
+	j outer_loop_1	# return to outer_loop_1 label							
+	end: # end of algorithm
 .end_macro
 	
 .macro move_down()
 	li $t0, 0 # row iterator
 	li $s7, 3 # game board size
-	li $s4, 4
+	li $s4, 4 #
 	li $v0, 0
 	outer_loop_1:
 	beq $t0, 3, end
 	li $t1, 1 # column iterator
-	li $t2, 0
+	li $t2, 0 # counter for amount of switches per column
 	outer_loop_2:
 	beq $t1, -1, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
@@ -156,6 +157,7 @@
 	add $t5, $t5, $t0 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
+	beq $t7, 0, fail_conditional
 	beq $t6, 0, move_only
 	beq $t6, $t7, check_l
 	j fail_conditional
@@ -190,17 +192,17 @@
 .macro move_left()
 	li $t0, 0 # row iterator
 	li $s7, 3 # game board size
-	li $s4, 4
-	li $v0, 0
-	outer_loop_1:
-	beq $t0, 3, end
+	li $s4, 4 # 4 for address offset multiplier
+	li $v0, 0 # return value for movement/fuse indicator
+	outer_loop_1: # row iterator loop
+	beq $t0, 3, end # row iterator condition
 	li $t1, 1 # column iterator
-	li $t2, 0
-	outer_loop_2:
-	beq $t1, 3, end_outer_loop_2
+	li $t2, 0 # counter for number of fuses per column
+	outer_loop_2: # column iterator loop
+	beq $t1, 3, end_outer_loop_2 # conditional for column iterator loop
 	addi $t3, $t1, 0 # checker iterator
 
-	inner_loop:
+	inner_loop: # loop for adjacent cells (left)
 	beq $t3, 0, end_inner
 	# compute for previous cell address
 	addi $t3, $t3, -1
@@ -214,6 +216,7 @@
 	add $t5, $t5, $t3 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
+	beq $t7, 0, fail_conditional
 	beq $t6, 0, move_only
 	beq $t6, $t7, check_l
 	j fail_conditional
@@ -272,6 +275,7 @@
 	add $t5, $t5, $t3 # t5 stores current cell value
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
+	beq $t7, 0, fail_conditional
 	beq $t6, 0, move_only
 	beq $t6, $t7, check_l
 	j fail_conditional
@@ -523,7 +527,6 @@ start_ask_for_move:
 	b start_ask_for_move
 w_input:
 	move_up()
-	print_num($v0)
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
@@ -531,7 +534,6 @@ w_input:
 	
 a_input:
 	move_left()
-	print_num($v0)
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
@@ -539,7 +541,6 @@ a_input:
 	
 s_input:
 	move_down()
-	print_num($v0)
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
@@ -547,7 +548,6 @@ s_input:
 	
 d_input:
 	move_right()
-	print_num($v0)
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
@@ -654,20 +654,18 @@ main_game_loop_random:
 	sw	$ra, ($sp)
 	ask_for_move()
 	add_random_two_to_board()
-	print_grid()
 	check_win_state()
 	beq	$v0, 1, win
 	beq	$v0, 0, lose
-	
+	print_grid()
 	b main_game_loop_random
 	
 main_game_loop_no_random:
 	ask_for_move()
-	print_grid()
 	check_win_state()
 	beq	$v0, 1, win
 	beq	$v0, 0, lose
-	
+	print_grid()
 	b main_game_loop_no_random
 	
 win:
