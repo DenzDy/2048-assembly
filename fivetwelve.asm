@@ -621,6 +621,19 @@ custom_game_loop_start:
 custom_game_loop:
 	beq	$t0, $t1, after_add	# exit loop
 	get_int_input($t3)	# get value to set cell
+	beq $t3, 0, next
+	beq $t3, 2, next
+	beq $t3, 4, next
+	beq $t3, 8, next
+	beq $t3, 16, next
+	beq $t3, 32, next
+	beq $t3, 64, next
+	beq $t3, 128, next
+	beq $t3, 256, next
+	beq $t3, 512, next
+	print_str_input(invalid_custom_input)
+	j custom_game_loop
+	next:
 	mul	$t5, $t2, $t0	# get proper offset for set_cell_value
 	set_cell_value($t5, $t3)	# set the cell with offset t5 to value in t3
 	addi	$t0, $t0, 1	# i = i + 1
@@ -699,6 +712,7 @@ two_eight: .asciiz "256"
 two_nine: .asciiz "512"
 
 start_msg: .asciiz "Choose [1] or [2]\n[1] New Game\n[2] Start from a State\n"
+invalid_custom_input: .asciiz "Invalid Input!, Please choose from powers of 2 to 512 only\n"
 movement_prompt: .asciiz "Enter a move: "
 configuration_prompt: "\nEnter a board configuration:\n"
 win_msg: .asciiz "\nCongratulations! You have reached the 512 tile!\n"
