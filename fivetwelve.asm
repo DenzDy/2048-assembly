@@ -483,7 +483,7 @@ end_print_loop:
 		get_cell_value($t0, $t3)
 		beq $t3, $0, zero_found
 		addi $t4, $t4, 1
-	blt $t4, $t5, loop
+	ble $t4, $t5, loop
 	li $v0, 0 # return 0 if board is full
 	b end
 	
@@ -679,7 +679,10 @@ after_add:
 
 main_game_loop_random:
 	ask_for_move()
+	check_if_board_is_full()
+	beq $v0, 0, skip_generation
 	add_random_two_to_board()
+	skip_generation:
 	check_win_state()
 	beq	$v0, 1, win
 	beq	$v0, 0, lose
