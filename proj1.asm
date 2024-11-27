@@ -21,10 +21,10 @@
 	li $s4, 4
 	li $v0, 0
 	outer_loop:
-	beq $t0, 2, end
+	beq $t0, 3, end
 	li $t1, 0 # column iterator
 	inner_loop:
-	beq $t1, 2 inner_loop_end
+	beq $t1, 3, inner_loop_end
 	
 	# calculate current cell address
 	mul $t2, $s7, $t0
@@ -49,8 +49,12 @@
 	get_cell_value($t4, $t4)
 	
 	# conditionals
+	beq $t1, 2, skip_horizontal
 	beq $t2, $t3, return_2
+	skip_horizontal:
+	beq $t0, 2, skip_vertical
 	beq $t2, $t4, return_2
+	skip_vertical:
 	beq $t2, 0, return_2
 	loop_return:
 	beq $t2, 512, return_1
@@ -108,6 +112,7 @@
 	addi $t2, $t2, 1
 	j fail_conditional
 	move_only:
+	li $v0, 1
 	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
 	sw $t6, 0($t4) # store to cell
@@ -451,8 +456,9 @@ end_print_loop:
 		addi	$t2, $0, 2
 		addi $t1, $t0, 0        # save current offset to $t1 resgiter for get_cell_value.
 		get_cell_value($t1, $t3)
-	bne $t3, $0, loop               # checks if randomly picked cell is not empty. Loops if it is not empty
+	bne $t3, 0, loop               # checks if randomly picked cell is not empty. Loops if it is not empty
 	set_cell_value($t0, $t2)	# set the cell with offset t0 to value in t3
+
 .end_macro
 	
 	
@@ -474,7 +480,7 @@ end_print_loop:
 	b end
 	
 	zero_found:
-		li $v0, 0
+		li $v0, 1
 	end:
 	
 .end_macro
@@ -485,35 +491,34 @@ start_ask_for_move:
 	li $v0, 4            # System call for print_string
 	la $a0, movement_prompt       # Load address of prompt string
 	syscall
-	
+
 	li $v0, 12
 	syscall
-	
 	move	$t0, $v0
-	
+
 	beq	$t0, 87, w_input	# ASCII FOR W
 	beq	$t0, 119, w_input	# ASCII FOR w
-	
+
 	beq	$t0, 65, a_input	# ASCII FOR A
 	beq	$t0, 97, a_input	# ASCII FOR a
-	
+
 	beq	$t0, 83, s_input	# ASCII FOR S
 	beq	$t0, 115, s_input	# ASCII FOR s
-	
+
 	beq	$t0, 68, d_input	# ASCII FOR D
 	beq	$t0, 100, d_input	# ASCII FOR d
-	
+
 	beq	$t0, 88, x_input	# ASCII FOR X
 	beq	$t0, 120, x_input	# ASCII FOR x
-	
+
 	beq	$t0, 51, disable_random	# ASCII FOR 3
-	
+
 	beq	$t0, 52, enable_random	# ASCII FOR 4
-	
+
 	b start_ask_for_move
-	
 w_input:
 	move_up()
+	print_num($v0)
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
@@ -521,6 +526,7 @@ w_input:
 	
 a_input:
 	move_left()
+	print_num($v0)
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
@@ -528,6 +534,7 @@ a_input:
 	
 s_input:
 	move_down()
+	print_num($v0)
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
@@ -535,6 +542,7 @@ s_input:
 	
 d_input:
 	move_right()
+	print_num($v0)
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
@@ -624,7 +632,7 @@ init_cg_loop_random:
 
 cg_loop:
 	check_if_board_is_full()
-	beq $v0, 0, add_random_two_cg              # placeholder for conditional to allow new random two
+	beq $v0, 1, add_random_two_cg              # placeholder for conditional to allow new random two
 after_add:
 	check_win_state()
 	beq $v0, 1, win
@@ -633,7 +641,6 @@ after_add:
 	print_grid()
 	# move_down()
 	# print_num($v0)
-	print_grid()
 	reset_registers()
 	jr $ra
 
@@ -689,7 +696,7 @@ two_eight: .asciiz "256"
 two_nine: .asciiz "512"
 
 start_msg: .asciiz "Choose [1] or [2]\n[1] New Game\n[2] Start from a State\n"
-movement_prompt: .asciiz "Enter a move:\n"
+movement_prompt: .asciiz "Enter a move: "
 configuration_prompt: "\nEnter a board configuration:\n"
 win_msg: .asciiz "\nCongratulations! You have reached the 512 tile!\n"
 lose_msg: .asciiz "\nGame over.\n"
