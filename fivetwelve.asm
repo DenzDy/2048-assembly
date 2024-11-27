@@ -484,11 +484,11 @@ end_print_loop:
 		beq $t3, $0, zero_found
 		addi $t4, $t4, 1
 	blt $t4, $t5, loop
-	li $v0, 0
+	li $v0, 0 # return 0 if board is full
 	b end
 	
 	zero_found:
-		li $v0, 1
+		li $v0, 1 # return 1 if board is not full
 	end:
 	
 .end_macro
@@ -631,7 +631,7 @@ new_game_loop:
 	addi	$t2, $0, 2
 	set_cell_value($t0, $t2)	# set the cell with offset t0 to value in t3
 	#print_grid()
-	j init_cg_loop_random
+	j main_game_loop_random
 	
 custom_game_loop_start:
 	print_str_input(configuration_prompt)
@@ -665,18 +665,7 @@ custom_game_loop:
 	addi	$t0, $t0, 1	# i = i + 1
 	b	custom_game_loop
 
-add_random_two_cg:
-	add_random_two_to_board()
-	j after_add  
-			
-init_cg_loop_random:
-	add_random_two_to_board()
-	j after_add
 
-
-cg_loop:
-	check_if_board_is_full()
-	beq $v0, 1, add_random_two_cg              # placeholder for conditional to allow new random two
 after_add:
 	check_win_state()
 	beq $v0, 1, win
