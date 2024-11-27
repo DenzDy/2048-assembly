@@ -113,6 +113,7 @@
 	addi $t2, $t2, 1 # iterate fuse counter by 1 
 	j fail_conditional
 	move_only:
+	beq $t7, 0, fail_conditional
 	li $v0, 1 # indicator that movement occurred (for movement input that does nothing)
 	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
@@ -164,6 +165,7 @@
 	beq $t7, 0, fail_conditional
 	beq $t2, 1, fail_conditional
 	switching:
+	beq $t7, 0, fail_conditional
 	li $v0, 1
 	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
@@ -231,6 +233,7 @@
 	addi $t2, $t2, 1
 	j fail_conditional
 	move_only:
+	beq $t7, 0, fail_conditional
 	li $v0, 1
 	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
@@ -290,6 +293,7 @@
 	addi $t2, $t2, 1
 	j fail_conditional
 	move_only:
+	beq $t7, 0, fail_conditional
 	li $v0, 1
 	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
@@ -496,33 +500,55 @@ start_ask_for_move:
 	la $a0, movement_prompt       # Load address of prompt string
 	syscall
 
-	li $v0, 12
+	li $v0, 8
+	la $a0, inp_buffer
+	li $a1, 100
 	syscall
-	move	$t0, $v0
-	wait_till_enter_loop:
-	li $v0, 12
-	syscall
-	move $t1, $v0
-	bne $t1, 10, wait_till_enter_loop 
+	la $t0, inp_buffer
+	lb $t0, 0($t0)
 	
-	beq	$t0, 87, w_input	# ASCII FOR W
-	beq	$t0, 119, w_input	# ASCII FOR w
+	la $t1, move_w
+	lb $t1, 0($t1)
+	beq	$t0, $t1, w_input	# ASCII FOR W
+	la $t1, move_wc
+	lb $t1, 0($t1)
+	beq	$t0, $t1, w_input	# ASCII FOR w
 
-	beq	$t0, 65, a_input	# ASCII FOR A
-	beq	$t0, 97, a_input	# ASCII FOR a
+	la $t1, move_a
+	lb $t1, 0($t1)
+	beq	$t0, $t1, a_input	# ASCII FOR A
+	la $t1, move_ac
+	lb $t1, 0($t1)
+	beq	$t0, $t1, a_input	# ASCII FOR a
+	
+	la $t1, move_s
+	lb $t1, 0($t1)
+	beq	$t0, $t1, s_input	# ASCII FOR S
+	la $t1, move_sc
+	lb $t1, 0($t1)
+	beq	$t0, $t1, s_input	# ASCII FOR s
 
-	beq	$t0, 83, s_input	# ASCII FOR S
-	beq	$t0, 115, s_input	# ASCII FOR s
+	la $t1, move_d
+	lb $t1, 0($t1)
+	beq	$t0, $t1, d_input	# ASCII FOR D
+	la $t1, move_dc
+	lb $t1, 0($t1)
+	beq	$t0, $t1, d_input	# ASCII FOR d
 
-	beq	$t0, 68, d_input	# ASCII FOR D
-	beq	$t0, 100, d_input	# ASCII FOR d
+	la $t1, move_x
+	lb $t1, 0($t1)
+	beq	$t0, $t1, x_input	# ASCII FOR X
+	la $t1, move_xc
+	lb $t1, 0($t1)
+	beq	$t0, $t1, x_input	# ASCII FOR x
 
-	beq	$t0, 88, x_input	# ASCII FOR X
-	beq	$t0, 120, x_input	# ASCII FOR x
+	la $t1, move_3
+	lb $t1, 0($t1)
+	beq	$t0, $t1, disable_random	# ASCII FOR 3
 
-	beq	$t0, 51, disable_random	# ASCII FOR 3
-
-	beq	$t0, 52, enable_random	# ASCII FOR 4
+	la $t1, move_4
+	lb $t1, 0($t1)
+	beq	$t0, $t1, enable_random	# ASCII FOR 4
 	
 	b start_ask_for_move
 w_input:
@@ -700,6 +726,8 @@ move_input: .space 2
 divider: .asciiz "\n+---+---+---+\n"
 cells: .asciiz "|   |   |   |\n"
 
+inp_buffer: .space 100
+
 zero: .asciiz "   "
 two_one: .asciiz " 2 "
 two_two: .asciiz " 4 "
@@ -710,6 +738,19 @@ two_six: .asciiz " 64"
 two_seven: .asciiz "128"
 two_eight: .asciiz "256"
 two_nine: .asciiz "512"
+
+move_w: .asciiz "w\n"
+move_a: .asciiz "a\n"
+move_s: .asciiz "s\n"
+move_d: .asciiz "d\n"
+move_x: .asciiz "x\n"
+move_wc: .asciiz "W\n"
+move_ac: .asciiz "A\n"
+move_sc: .asciiz "S\n"
+move_dc: .asciiz "D\n"
+move_xc: .asciiz "X\n"
+move_3: .asciiz "3\n"
+move_4: .asciiz "4\n"
 
 start_msg: .asciiz "Choose [1] or [2]\n[1] New Game\n[2] Start from a State\n"
 invalid_custom_input: .asciiz "Invalid Input!, Please choose from powers of 2 to 512 only\n"
