@@ -174,6 +174,7 @@
 	addi $t2, $t2, 1
 	j fail_conditional
 	move_only:
+	beq $t7, 0, fail_conditional
 	li $v0, 1
 	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
