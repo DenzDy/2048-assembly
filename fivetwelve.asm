@@ -618,19 +618,13 @@ start_game:
 	beq	$t0, $t2, custom_game_loop_start
 	
 new_game_loop:
-	addi	$t0, $0, 9	# for rand modulo
-	get_rand($t0)		# generates random position
-	# print_num($a0)		# print random num (0 to 9 for offset)
-	
-	addi	$t1, $0, 4	# set t0 to 4 for multiplication
-	mul	$t0, $a0, $t1	# multiply offset by 4, store in $t0
+
 	li	$v0, 9		# sbrk
 	li	$a0, 36		# need 9 cells, 9*4 = 36
 	syscall			# sbrk, memory location now in v0
 	
 	move	$s0, $v0	# stores CELL 0 address in $s0
-	addi	$t2, $0, 2
-	set_cell_value($t0, $t2)	# set the cell with offset t0 to value in t3
+	add_random_two_to_board()
 	add_random_two_to_board()
 	print_grid()
 	j main_game_loop_random
