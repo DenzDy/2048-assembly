@@ -338,25 +338,15 @@ print_grid_loop:
 	lw	$t1, 0($t0)	# get value of cell to check what to print
 	
 	beq	$t1, $0, print_cell_0
-	addi	$t2, $0, 2	# set t2 to 0, use this to compute for what to compare
-	beq	$t1, $t2, print_cell_2
-	sll	$t2, $t2, 1	# next value to check
-	beq	$t1, $t2, print_cell_4
-	sll	$t2, $t2, 1	# next value to check
-	beq	$t1, $t2, print_cell_8
-	sll	$t2, $t2, 1	# next value to check
-	beq	$t1, $t2, print_cell_16
-	sll	$t2, $t2, 1	# next value to check
-	beq	$t1, $t2, print_cell_32
-	sll	$t2, $t2, 1	# next value to check
-	beq	$t1, $t2, print_cell_64
-	sll	$t2, $t2, 1	# next value to check
-	beq	$t1, $t2, print_cell_128
-	sll	$t2, $t2, 1	# next value to check
-	beq	$t1, $t2, print_cell_256
-	sll	$t2, $t2, 1	# next value to check
-	beq	$t1, $t2, print_cell_512
-	sll	$t2, $t2, 1	# next value to check
+	beq	$t1, 2, print_cell_2
+	beq	$t1, 4, print_cell_4
+	beq	$t1, 8, print_cell_8
+	beq	$t1, 16, print_cell_16
+	beq	$t1, 32, print_cell_32
+	beq	$t1, 64, print_cell_64
+	beq	$t1, 128, print_cell_128
+	beq	$t1, 256, print_cell_256
+	beq	$t1, 512, print_cell_512
 	
 print_cell_0:
 	print_str_input(zero)
@@ -606,8 +596,7 @@ end_movement:
 .text
 main:
 	jal start_game
-	jal main_game_loop_random
-	j end_program
+	j main_game_loop_random
 	
 start_game:
 	print_str_input(start_msg)
@@ -627,7 +616,7 @@ new_game_loop:
 	add_random_two_to_board()
 	add_random_two_to_board()
 	print_grid()
-	j main_game_loop_random
+	jr $ra
 	
 custom_game_loop_start:
 	print_str_input(configuration_prompt)
@@ -668,8 +657,6 @@ after_add:
 	beq $v0, 0, lose
 
 	print_grid()
-	# move_down()
-	# print_num($v0)
 	reset_registers()
 	jr $ra
 
