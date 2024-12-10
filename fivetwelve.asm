@@ -326,6 +326,7 @@
 .end_macro
 
 .macro print_grid()
+	print_score()
 	print_str_input(divider)
 	move	$t0, $s0	# get address of first cell, increment at the end of the loop
 	
@@ -636,6 +637,25 @@ cg_input_loop:
 	b	cg_input_start
 .end_macro
 
+.macro print_score()
+	addi	$t0, $s0, 0	# first cell address
+	addi	$t1, $0, 0	# initial score count
+	addi	$t2, $0, 0	# cell counter
+	
+print_score_loop:
+	beq	$t2, 36, end_score_loop	# loop guard
+	lw	$t3, ($t0)		# retrieve current cell
+	add	$t1, $t1, $t3		# add score with current cell value
+	addi	$t0, $t0, 4		# next cell
+	addi	$t2, $t2, 1		# counter = counter + 1
+	b	print_score_loop
+	
+end_score_loop:
+	move	$s1, $t1
+	print_str_input(score_msg)
+	print_num($s1)
+.end_macro
+
 .text
 main:
 	jal start_game
@@ -658,6 +678,7 @@ new_game_loop:
 	move	$s0, $v0	# stores CELL 0 address in $s0
 	add_random_two_to_board()
 	add_random_two_to_board()
+	
 	print_grid()
 	jr $ra
 	
@@ -711,6 +732,7 @@ after_add:
 	beq $v0, 1, win		# check win state returns 1 if win
 	beq $v0, 0, lose	# check win state returns 2 if lose
 				# else 0
+				
 	print_grid()
 	reset_registers()
 	jr $ra
@@ -724,6 +746,7 @@ main_game_loop_random:
 	check_win_state()
 	beq	$v0, 1, win
 	beq	$v0, 0, lose
+	
 	print_grid()
 	b main_game_loop_random
 	
@@ -732,6 +755,7 @@ main_game_loop_no_random:
 	check_win_state()
 	beq	$v0, 1, win
 	beq	$v0, 0, lose
+	
 	print_grid()
 	b main_game_loop_no_random
 	
@@ -795,3 +819,5 @@ newtiledisable_msg: .asciiz "New tile generation disabled.\n"
 
 custom_game_cell_msg: .asciiz "Enter a cell number (1 to 36, 0 to end configuration): \n"
 custom_game_cell_value_msg: .asciiz "Enter a cell value (powers of 2 only): \n"
+
+score_msg: "\nSCORE: "
