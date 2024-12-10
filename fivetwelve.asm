@@ -329,10 +329,10 @@
 	print_str_input(divider)
 	move	$t0, $s0	# get address of first cell, increment at the end of the loop
 	
-	addi	$t3, $s0, 8	# get cell 2 address
-	addi	$t4, $s0, 20	# get cell 5 address
-	addi	$t5, $s0, 32	# get cell 8 address (last cell)
-	
+	addi	$t3, $s0, 140	# get cell 35 (last cell) address
+	addi	$t4, $0, 0	# counter for row
+	addi	$t5, $0, 0	# column counter
+
 print_grid_loop:
 	print_char(124)		# print bar
 	lw	$t1, 0($t0)	# get value of cell to check what to print
@@ -347,6 +347,8 @@ print_grid_loop:
 	beq	$t1, 128, print_cell_128
 	beq	$t1, 256, print_cell_256
 	beq	$t1, 512, print_cell_512
+	beq	$t1, 1012, print_cell_1012
+	beq	$t1, 2048, print_cell_2048
 	
 print_cell_0:
 	print_str_input(zero)
@@ -387,19 +389,30 @@ print_cell_256:
 print_cell_512:
 	print_str_input(two_nine)
 	b	next_print_loop
+	
+print_cell_1012:
+	print_str_input(two_ten)
+	b	next_print_loop
+	
+print_cell_2048:
+	print_str_input(two_eleven)
+	b	next_print_loop
 
 next_print_loop:
-	beq	$t0, $t3, next_print_loop_2	# after printing cell 2
-	beq	$t0, $t4, next_print_loop_2	# after printing cell 5
-	beq	$t0, $t5, end_print_loop	# after printing cell 8
+	beq	$t4, 5, next_print_loop_2	# after printing cell 5
+	beq	$t0, $t3, end_print_loop	# after printing cell 35
 	
 	addi	$t0, $t0, 4
+	addi	$t4, $t4, 1
 	b	print_grid_loop
 	
 next_print_loop_2:
+	beq	$t5, 5, end_print_loop
 	print_char(124)
 	print_str_input(divider)
 	addi	$t0, $t0, 4
+	addi	$t4, $0, 0
+	addi	$t5, $t5, 1
 	b	print_grid_loop
 
 end_print_loop:
@@ -448,7 +461,7 @@ end_print_loop:
 
 .macro add_random_two_to_board()
 	loop:
-		addi	$t0, $0, 9	# for rand modulo
+		addi	$t0, $0, 36	# for rand modulo
 		get_rand($t0)		# generates random position
 		addi	$t1, $0, 4	# set t0 to 4 for multiplication
 		mul	$t0, $a0, $t1	# multiply offset by 4, store in $t0
@@ -592,6 +605,36 @@ end_movement:
 	
 .end_macro
 
+.macro custom_game_input()
+	addi	$t2, $0, 4
+	
+cg_input_start:
+	print_str_input(custom_game_cell_msg)
+	get_int_input($t0)		# ask for cell number
+	beq	$t0, 0, after_add	# 0 to end configuration
+	subi	$t0, $t0, 1		# -1 if not "end configuration"
+	
+cg_input_loop:
+	print_str_input(custom_game_cell_value_msg)
+	get_int_input($t1)
+	
+	beq $t1, 0, next
+	beq $t1, 2, next
+	beq $t1, 4, next
+	beq $t1, 8, next
+	beq $t1, 16, next
+	beq $t1, 32, next
+	beq $t1, 64, next
+	beq $t1, 128, next
+	beq $t1, 256, next
+	beq $t1, 512, next
+	print_str_input(invalid_custom_input)
+	b cg_input_loop
+	next:
+	mul	$t4, $t2, $t0	# get proper offset for set_cell_value
+	set_cell_value($t4, $t1)	# set the cell with offset t4 to value in t1
+	b	cg_input_start
+.end_macro
 
 .text
 main:
@@ -609,7 +652,7 @@ start_game:
 new_game_loop:
 
 	li	$v0, 9		# sbrk
-	li	$a0, 36		# need 9 cells, 9*4 = 36
+	li	$a0, 144	# need 36 cells, 9*36 = 144
 	syscall			# sbrk, memory location now in v0
 	
 	move	$s0, $v0	# stores CELL 0 address in $s0
@@ -619,17 +662,26 @@ new_game_loop:
 	jr $ra
 	
 custom_game_loop_start:
+	li	$v0, 9		# sbrk
+	li	$a0, 144	# need 36 cells, 9*36 = 144
+	syscall
+	move	$s0, $v0	# stores cell 0 in s0
+	b	custom_game_loop_new
+	
+	
+	# original code
 	print_str_input(configuration_prompt)
 	addi	$t0, $0, 0	# loop initial value
-	addi	$t1, $0, 9	# loop guard
+	addi	$t1, $0, 36	# loop guard
 	addi	$t2, $0, 4	# for multiplication
 	
 	li	$v0, 9		# sbrk
-	li	$a0, 36		# need 9 cells, 9*4 = 36
+	li	$a0, 144	# need 36 cells, 9*36 = 144
 	syscall
 	move	$s0, $v0
+
 	
-custom_game_loop:
+custom_game_loop_original:
 	beq	$t0, $t1, after_add	# exit loop
 	get_int_input($t3)	# get value to set cell
 	beq $t3, 0, next
@@ -643,19 +695,22 @@ custom_game_loop:
 	beq $t3, 256, next
 	beq $t3, 512, next
 	print_str_input(invalid_custom_input)
-	j custom_game_loop
+	j custom_game_loop_original
 	next:
 	mul	$t5, $t2, $t0	# get proper offset for set_cell_value
 	set_cell_value($t5, $t3)	# set the cell with offset t5 to value in t3
 	addi	$t0, $t0, 1	# i = i + 1
-	b	custom_game_loop
+	b	custom_game_loop_original
 
+custom_game_loop_new:
+	custom_game_input()
 
+	
 after_add:
 	check_win_state()
-	beq $v0, 1, win
-	beq $v0, 0, lose
-
+	beq $v0, 1, win		# check win state returns 1 if win
+	beq $v0, 0, lose	# check win state returns 2 if lose
+				# else 0
 	print_grid()
 	reset_registers()
 	jr $ra
@@ -696,21 +751,23 @@ end_program:
     
 .data
 move_input: .space 2
-divider: .asciiz "\n+---+---+---+\n"
+divider: .asciiz "\n+----+----+----+----+----+----+\n"
 cells: .asciiz "|   |   |   |\n"
 
 inp_buffer: .space 100
 
-zero: .asciiz "   "
-two_one: .asciiz " 2 "
-two_two: .asciiz " 4 "
-two_three: .asciiz " 8 "
-two_four: .asciiz " 16"
-two_five: .asciiz " 32"
-two_six: .asciiz " 64"
-two_seven: .asciiz "128"
-two_eight: .asciiz "256"
-two_nine: .asciiz "512"
+zero: .asciiz "    "
+two_one: .asciiz "  2 "
+two_two: .asciiz "  4 "
+two_three: .asciiz "  8 "
+two_four: .asciiz " 16 "
+two_five: .asciiz " 32 "
+two_six: .asciiz " 64 "
+two_seven: .asciiz " 128"
+two_eight: .asciiz " 256"
+two_nine: .asciiz " 512"
+two_ten: .asciiz "1024"
+two_eleven: .asciiz "2048"
 
 move_w: .asciiz "w\n"
 move_a: .asciiz "a\n"
@@ -726,10 +783,15 @@ move_3: .asciiz "3\n"
 move_4: .asciiz "4\n"
 
 start_msg: .asciiz "Choose [1] or [2]\n[1] New Game\n[2] Start from a State\n"
-invalid_custom_input: .asciiz "Invalid Input!, Please choose from powers of 2 to 512 only\n"
+invalid_custom_input: .asciiz "Invalid Input!, Please choose from powers of 2 to 2048 only\n"
 movement_prompt: .asciiz "Enter a move: "
 configuration_prompt: "\nEnter a board configuration:\n"
-win_msg: .asciiz "\nCongratulations! You have reached the 512 tile!\n"
+
+win_msg: .asciiz "\nCongratulations! You have reached the 2048 tile!\n"
 lose_msg: .asciiz "\nGame over.\n"
+
 newtile_msg: .asciiz "New tile generation enabled.\n"
 newtiledisable_msg: .asciiz "New tile generation disabled.\n"
+
+custom_game_cell_msg: .asciiz "Enter a cell number (1 to 36, 0 to end configuration): \n"
+custom_game_cell_value_msg: .asciiz "Enter a cell value (powers of 2 only): \n"
