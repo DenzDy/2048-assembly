@@ -132,6 +132,8 @@
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # get current cell value
 	bne $t6, $t7, fail_conditional_2
+	beq $t6, 0, fail_conditional_2
+	li $v0, 1
 	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
 	li $t7, 0 # board[k][i] = 0
 	sw $t6, 0($t4) # store to cell
@@ -212,19 +214,6 @@
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
 	beq $t6, 0, move_only
-	beq $t6, $t7, check_l
-	j fail_conditional
-	check_l:
-	beq $t7, 0, fail_conditional
-	beq $t2, 4, fail_conditional
-	switching:
-	beq $t7, 0, fail_conditional
-	li $v0, 1
-	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
-	li $t7, 0 # board[k][i] = 0
-	sw $t6, 0($t4) # store to cell
-	sw $t7, 0($t5) # store to cell
-	addi $t2, $t2, 1
 	j fail_conditional
 	move_only:
 	beq $t7, 0, fail_conditional
@@ -240,6 +229,70 @@
 	addi $t1, $t1, -1
 	j outer_loop_2		
 	end_outer_loop_2:
+
+	li $t1, 5 # column iterator
+	outer_loop_2_2:
+	beq $t1, 0, end_outer_loop_2_2 # conditional for outer loop (column iteration)
+	addi $t1, $t1, -1 # decrease current cell in column to get previous cell (above current)
+	mul $t4, $s7, $t1 # converting indexes to offset (row index * board size + column index)
+	addi $t1, $t1, 1 # revert decrease for future computations of current cell
+	add $t4, $t4, $t0 # t4 stores previous cell value
+	mul $t4, $t4, $s4 # get address offset of previous cell value
+	get_cell_value($t4, $t6) # get previous cell value
+	# compute for current cell address
+	mul $t5, $s7, $t1 # converting indexes to offset (row index * board size + column index)
+	add $t5, $t5, $t0 # t5 stores current cell value
+	mul $t5, $t5, $s4 # get address offset
+	get_cell_value($t5, $t7) # get current cell value
+	bne $t6, $t7, fail_conditional_2
+	beq $t6, 0, fail_conditional_2
+	li $v0, 1
+	add $t7, $t6, $t7 # board[k][i] += board[k-i][i]
+	li $t6, 0 # board[k][i] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	fail_conditional_2:
+	addi $t1, $t1, -1
+	j outer_loop_2_2
+	end_outer_loop_2_2:
+
+
+	li $t1, 1 # column iterator
+	li $t2, 0 # counter for amount of switches per column
+	outer_loop_2_3:
+	beq $t1, -1, end_outer_loop_2_3
+	addi $t3, $t1, 0 # checker iterator
+	inner_loop_2:
+	beq $t3, 5, end_inner_2
+	# compute for previous cell address
+	addi $t3, $t3, 1
+	mul $t4, $s7, $t3
+	addi $t3, $t3, -1
+	add $t4, $t4, $t0 # t4 stores next cell value
+	mul $t4, $t4, $s4 # get address offset
+	get_cell_value($t4, $t6) # next cell value
+	# compute for current cell address
+	mul $t5, $s7, $t3
+	add $t5, $t5, $t0 # t5 stores current cell value
+	mul $t5, $t5, $s4 # get address offset
+	get_cell_value($t5, $t7) # current cell value
+	beq $t6, 0, move_only_2
+	j fail_conditional_3
+	move_only_2:
+	beq $t7, 0, fail_conditional_3
+	li $v0, 1
+	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
+	li $t7, 0 # board[k][i] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	fail_conditional_3:
+	addi $t3, $t3, 1
+	j inner_loop_2
+	end_inner_2:
+	addi $t1, $t1, -1
+	j outer_loop_2_3		
+	end_outer_loop_2_3:
+
 	addi $t0, $t0, 1	
 	j outer_loop_1											
 	end:				
@@ -273,18 +326,6 @@
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
 	beq $t6, 0, move_only
-	beq $t6, $t7, check_l
-	j fail_conditional
-	check_l:
-	beq $t7, 0, fail_conditional
-	beq $t2, 4, fail_conditional
-	switching:
-	li $v0, 1
-	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
-	li $t7, 0 # board[k][i] = 0
-	sw $t6, 0($t4) # store to cell
-	sw $t7, 0($t5) # store to cell
-	addi $t2, $t2, 1
 	j fail_conditional
 	move_only:
 	beq $t7, 0, fail_conditional
@@ -300,6 +341,73 @@
 	addi $t1, $t1, 1
 	j outer_loop_2		
 	end_outer_loop_2:
+
+
+	li $t1, 1 # column iterator
+	li $t2, 0 # counter for number of fuses per column
+	outer_loop_2_2: # column iterator loop
+	beq $t1, 6, end_outer_loop_2_2 # conditional for column iterator loop
+	addi $t1, $t1, -1
+	mul $t4, $s7, $t0
+	add $t4, $t4, $t1 # t4 stores previous cell value
+	addi $t1, $t1, 1
+	mul $t4, $t4, $s4 # get address offset
+	get_cell_value($t4, $t6) # previous cell value
+	# compute for current cell address
+	mul $t5, $s7, $t0
+	add $t5, $t5, $t1 # t5 stores current cell value
+	mul $t5, $t5, $s4 # get address offset
+	get_cell_value($t5, $t7) # current cell value
+	bne $t6, $t7, fail_conditional_2
+	beq $t6, 0, fail_conditional_2
+	li $v0, 1
+	add $t6, $t6, $t7 # board[i][k] += board[i][k-1]
+	li $t7, 0 # board[i][k] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	fail_conditional_2:
+	addi $t1, $t1, 1
+	j outer_loop_2_2
+	end_outer_loop_2_2:
+	
+
+	li $t1, 1 # column iterator
+	li $t2, 0 # counter for number of fuses per column
+	outer_loop_2_3: # column iterator loop
+	beq $t1, 6, end_outer_loop_2_3 # conditional for column iterator loop
+	addi $t3, $t1, 0 # checker iterator
+
+	inner_loop_2: # loop for adjacent cells (left)
+	beq $t3, 0, end_inner_2
+	# compute for previous cell address
+	addi $t3, $t3, -1
+	mul $t4, $s7, $t0
+	add $t4, $t4, $t3 # t4 stores previous cell value
+	addi $t3, $t3, 1
+	mul $t4, $t4, $s4 # get address offset
+	get_cell_value($t4, $t6) # previous cell value
+	# compute for current cell address
+	mul $t5, $s7, $t0
+	add $t5, $t5, $t3 # t5 stores current cell value
+	mul $t5, $t5, $s4 # get address offset
+	get_cell_value($t5, $t7) # current cell value
+	beq $t6, 0, move_only_2
+	j fail_conditional_3
+	move_only_2:
+	beq $t7, 0, fail_conditional_3
+	li $v0, 1
+	add $t6, $t6, $t7 # board[k-1][i] += board[k][i]
+	li $t7, 0 # board[k][i] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	fail_conditional_3:
+	addi $t3, $t3, -1
+	j inner_loop_2
+	end_inner_2:
+	addi $t1, $t1, 1
+	j outer_loop_2_3		
+	end_outer_loop_2_3:
+
 	addi $t0, $t0, 1	
 	j outer_loop_1											
 	end:				
@@ -312,7 +420,7 @@
 	li $v0, 0
 	outer_loop_1:
 	beq $t0, 6, end
-	li $t1, 1 # column iterator
+	li $t1, 5 # column iterator
 	li $t2, 0
 	outer_loop_2:
 	
@@ -333,18 +441,6 @@
 	mul $t5, $t5, $s4 # get address offset
 	get_cell_value($t5, $t7) # current cell value
 	beq $t6, 0, move_only
-	beq $t6, $t7, check_l
-	j fail_conditional
-	check_l:
-	beq $t7, 0, fail_conditional
-	beq $t2, 4, fail_conditional
-	switching:
-	li $v0, 1
-	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
-	li $t7, 0 # board[k][i] = 0
-	sw $t6, 0($t4) # store to cell
-	sw $t7, 0($t5) # store to cell
-	addi $t2, $t2, 1
 	j fail_conditional
 	move_only:
 	beq $t7, 0, fail_conditional
@@ -360,6 +456,71 @@
 	addi $t1, $t1, -1
 	j outer_loop_2		
 	end_outer_loop_2:
+	
+	
+	li $t1, 4 # column iterator
+	li $t2, 0
+	outer_loop_2_2:
+	beq $t1, -1, end_outer_loop_2_2
+	addi $t1, $t1, 1
+	mul $t4, $s7, $t0
+	add $t4, $t4, $t1 # t4 stores next cell value
+	addi $t1, $t1, -1
+	mul $t4, $t4, $s4 # get address offset
+	get_cell_value($t4, $t6) # next cell value
+	# compute for current cell address
+	mul $t5, $s7, $t0
+	add $t5, $t5, $t1 # t5 stores current cell value
+	mul $t5, $t5, $s4 # get address offset
+	get_cell_value($t5, $t7) # current cell value
+	bne $t6, $t7, fail_conditional_2
+	beq $t6, 0, fail_conditional_2
+	li $v0, 1
+	add $t6, $t6, $t7 # board[i][k] += board[i][k-1]
+	li $t7, 0 # board[i][k] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	fail_conditional_2:
+	addi $t1, $t1, -1
+	j outer_loop_2_2
+	end_outer_loop_2_2:
+	
+	li $t1, 5 # column iterator
+	li $t2, 0
+	outer_loop_2_3:
+	beq $t1, -1, end_outer_loop_2_3
+	addi $t3, $t1, 0 # checker iterator
+	inner_loop_2:
+	beq $t3, 5, end_inner_2
+	# compute for previous cell address
+	addi $t3, $t3, 1
+	mul $t4, $s7, $t0
+	add $t4, $t4, $t3 # t4 stores next cell value
+	addi $t3, $t3, -1
+	mul $t4, $t4, $s4 # get address offset
+	get_cell_value($t4, $t6) # next cell value
+	# compute for current cell address
+	mul $t5, $s7, $t0
+	add $t5, $t5, $t3 # t5 stores current cell value
+	mul $t5, $t5, $s4 # get address offset
+	get_cell_value($t5, $t7) # current cell value
+	beq $t6, 0, move_only_2
+	j fail_conditional_3
+	move_only_2:
+	beq $t7, 0, fail_conditional_3
+	li $v0, 1
+	add $t6, $t6, $t7 # board[k+1][i] += board[k][i]
+	li $t7, 0 # board[k][i] = 0
+	sw $t6, 0($t4) # store to cell
+	sw $t7, 0($t5) # store to cell
+	fail_conditional_3:
+	addi $t3, $t3, 1
+	j inner_loop_2
+	end_inner_2:
+	addi $t1, $t1, -1
+	j outer_loop_2_3		
+	end_outer_loop_2_3:
+	
 	addi $t0, $t0, 1	
 	j outer_loop_1											
 	end:				
