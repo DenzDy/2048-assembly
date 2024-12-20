@@ -943,9 +943,58 @@ end_print_loop:
 	
 .end_macro
 
+
+.macro store_cells()
+	move	$t0, $sp	# sets t0 to sp (start of stack)
+	move	$t1, $s0	# sets t1 to first cell adress
+	addi	$t2, $0, 0	# counter
+store_loop:
+	beq	$t2, 36, end_store 
+	
+	lw	$t3, ($t1)	# stores cell content into t3
+	sw	$t3, ($t0)	# stores cell content into stack
+	
+	addi	$t0, $t0, 4	# next stack address
+	addi	$t1, $t1, 4	# next cell
+	addi	$t2, $t2, 1	# counter + 1
+	
+	b	store_loop
+	
+end_store:
+	li	$s2, 1
+.end_macro
+
+
+.macro undo_move()
+	move	$t0, $sp	# sets t0 to sp (start of stack)
+	move	$t1, $s0	# sets s0 to first cell address
+	addi	$t2, $0, 0	# counter
+	
+	addi	$s3, $s3, -1
+	beq	$s2, 0, undo_loop
+	addi	$s3, $s3, -1
+undo_loop:
+	beq	$t2, 36, end_undo 
+	
+	lw	$t3, ($t0)	# gets stack content
+	sw	$t3, ($t1)	# stores stack content into cell content
+
+	addi	$t0, $t0, 4	# next stack address
+	addi	$t1, $t1, 4	# next cell
+	addi	$t2, $t2, 1	# counter + 1
+	
+	b	undo_loop
+	
+end_undo:
+	li	$s2, 0
+.end_macro
+
+
 .macro ask_for_move()
+
 	li	$s4, 4		# sets s4 to the constant 4
 start_ask_for_move:
+	
 	addi $s3, $s3, 1
 	li $v0, 4            # System call for print_string
 	la $a0, movement_prompt       # Load address of prompt string
@@ -985,14 +1034,28 @@ start_ask_for_move:
 	la $t1, move_dc
 	lb $t1, 0($t1)
 	beq	$t0, $t1, d_input	# checks if input matches move_dc string
-
+	
 	la $t1, move_x			# load move_x string address to t1
 	lb $t1, 0($t1)			# load first byte of move_x string address to get actual character
 	beq	$t0, $t1, x_input	# checks if input matches move_x string
 	la $t1, move_xc			# load move_xc string address to t1
 	lb $t1, 0($t1)			# load first byte of move_xc string address to get actual character
 	beq	$t0, $t1, x_input	# checks if input matches move_xc string
-
+	
+	la $t1, move_z
+	lb $t1, 0($t1)
+	beq	$t0, $t1, z_input	# checks if input matches move_z string
+	la $t1, move_zc
+	lb $t1, 0($t1)
+	beq	$t0, $t1, z_input	# checks if input matches move_zc string
+	
+	la $t1, move_c
+	lb $t1, 0($t1)
+	beq	$t0, $t1, c_input	# checks if input matches move_z string
+	la $t1, move_cc
+	lb $t1, 0($t1)
+	beq	$t0, $t1, c_input	# checks if input matches move_zc string
+	
 	la $t1, move_3
 	lb $t1, 0($t1)
 	beq	$t0, $t1, disable_random	# checks if input matches 3 string
@@ -1003,28 +1066,76 @@ start_ask_for_move:
 	
 	b start_ask_for_move
 w_input:
+	store_cells()
+	beq	$s5, 1, cascading_w
+	beq	$s5, 0, default_w
+	
+	default_w:
 	move_up()
+	b end_w
+	
+	cascading_w:
+	move_up_cascade()
+	b end_w
+	
+	end_w:
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
 	b start_ask_for_move
 	
 a_input:
+	store_cells()
+	beq	$s5, 1, cascading_a
+	beq	$s5, 0, default_a
+	
+	default_a:
 	move_left()
+	b end_a
+	
+	cascading_a:
+	move_left_cascade()
+	b end_a
+	
+	end_a:
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
 	b start_ask_for_move
 	
 s_input:
+	store_cells()
+	beq	$s5, 1, cascading_s
+	beq	$s5, 0, default_s
+	
+	default_s:
 	move_down()
+	b end_s
+	
+	cascading_s:
+	move_down_cascade()
+	b end_s
+	
+	end_s:
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
 	b start_ask_for_move
 	
 d_input:
+	store_cells()
+	beq	$s5, 1, cascading_d
+	beq	$s5, 0, default_d
+	
+	default_d:
 	move_right()
+	b end_d
+	
+	cascading_d:
+	move_right_cascade()
+	b end_d
+	
+	end_d:
 	beq	$v0, 1, end_movement
 	reset_registers()
 	print_grid()
@@ -1048,8 +1159,30 @@ disable_random:
 	
 	b main_game_loop_no_random
 	
-end_movement:
+z_input:
+	undo_move()
+	print_grid()
+	b start_ask_for_move
 	
+c_input:
+	beq	$s5, 0, enable_cascade		# s5 = 0 means cascade is disabled, s5 = 1 means cascade is enabled
+	beq	$s5, 1, disable_cascade
+	
+	enable_cascade:
+	print_str_input(cascade_enable_msg)
+	li	$s5, 1				# sets cascading (s5) to 1
+	b	end_c_input
+	
+	disable_cascade:
+	print_str_input(cascade_disable_msg)
+	li	$s5, 0				# sets cascading (s5) to 0
+	b	end_c_input
+	
+end_c_input:
+	b start_ask_for_move
+	
+end_movement:
+
 .end_macro
 
 .macro custom_game_input()
@@ -1134,6 +1267,10 @@ new_game_loop:
 	add_random_two_to_board()
 	
 	print_grid()
+	
+	addi $sp, $sp, -144	# allocating 36 cells/144 bytes in stack
+	store_cells()
+	
 	jr $ra
 	
 custom_game_loop_start:
@@ -1189,10 +1326,15 @@ after_add:
 				
 	print_grid()
 	reset_registers()
+	
+	addi $sp, $sp, -144	# allocating 36 cells/144 bytes in stack
+	store_cells()
+	
 	jr $ra
 
 main_game_loop_random:
 	ask_for_move()
+	
 	check_if_board_is_full()
 	beq $v0, 0, skip_generation
 	add_random_two_to_board()
@@ -1206,6 +1348,7 @@ main_game_loop_random:
 	
 main_game_loop_no_random:
 	ask_for_move()
+	
 	check_win_state()
 	beq	$v0, 1, win
 	beq	$v0, 0, lose
@@ -1252,11 +1395,15 @@ move_a: .asciiz "a\n"
 move_s: .asciiz "s\n"
 move_d: .asciiz "d\n"
 move_x: .asciiz "x\n"
+move_z: .asciiz "z\n"
+move_c: .asciiz "c\n"
 move_wc: .asciiz "W\n"
 move_ac: .asciiz "A\n"
 move_sc: .asciiz "S\n"
 move_dc: .asciiz "D\n"
 move_xc: .asciiz "X\n"
+move_zc: .asciiz "Z\n"
+move_cc: .asciiz "C\n"
 move_3: .asciiz "3\n"
 move_4: .asciiz "4\n"
 
@@ -1274,6 +1421,8 @@ newtiledisable_msg: .asciiz "New tile generation disabled.\n"
 custom_game_cell_msg: .asciiz "Enter a cell number (1 to 36, 0 to end configuration): \n"
 custom_game_cell_value_msg: .asciiz "Enter a cell value (powers of 2 only): \n"
 
-score_msg: "\nSCORE: "
-moves_msg: "\nMOVES: "
+score_msg: .asciiz "\nSCORE: "
+moves_msg: .asciiz "\nMOVES: "
 
+cascade_enable_msg: .asciiz "Cascading enabled.\n"
+cascade_disable_msg: .asciiz "Cascading disabled.\n"
