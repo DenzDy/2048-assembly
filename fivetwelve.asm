@@ -771,6 +771,7 @@
 
 .macro print_grid()
 	print_score()
+	print_moves()
 	print_str_input(divider)
 	move	$t0, $s0	# get address of first cell, increment at the end of the loop
 	
@@ -945,6 +946,7 @@ end_print_loop:
 .macro ask_for_move()
 	li	$s4, 4		# sets s4 to the constant 4
 start_ask_for_move:
+	addi $s3, $s3, 1
 	li $v0, 4            # System call for print_string
 	la $a0, movement_prompt       # Load address of prompt string
 	syscall
@@ -1100,6 +1102,10 @@ end_score_loop:
 	print_num($s1)
 .end_macro
 
+.macro print_moves()
+	print_str_input(moves_msg)
+	print_num($s3)
+.end_macro
 .text
 main:
 	jal start_game
@@ -1265,3 +1271,5 @@ custom_game_cell_msg: .asciiz "Enter a cell number (1 to 36, 0 to end configurat
 custom_game_cell_value_msg: .asciiz "Enter a cell value (powers of 2 only): \n"
 
 score_msg: "\nSCORE: "
+moves_msg: "\nMOVES: "
+
