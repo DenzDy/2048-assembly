@@ -793,7 +793,7 @@ print_grid_loop:
 	beq	$t1, 128, print_cell_128
 	beq	$t1, 256, print_cell_256
 	beq	$t1, 512, print_cell_512
-	beq	$t1, 1012, print_cell_1012
+	beq	$t1, 1024, print_cell_1024
 	beq	$t1, 2048, print_cell_2048
 	
 print_cell_0:
@@ -836,7 +836,7 @@ print_cell_512:
 	print_str_input(two_nine)
 	b	next_print_loop
 	
-print_cell_1012:
+print_cell_1024:
 	print_str_input(two_ten)
 	b	next_print_loop
 	
