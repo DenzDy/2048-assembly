@@ -530,14 +530,14 @@
 	
 .macro move_up_cascade()
 	li $t0, 0 # row iterator
-	li $s7, 3 # game board size
+	li $s7, 6 # game board size
 	li $s4, 4 # 4 for address multiplier
 	li $v0, 0 # 
 	outer_loop_1:
-	beq $t0, 3, end # conditional for outer loop (row iteration)
+	beq $t0, 6, end # conditional for outer loop (row iteration)
 	li $t1, 1 # column iterator
 	outer_loop_2:
-	beq $t1, 3, end_outer_loop_2 # conditional for outer loop (column iteration)
+	beq $t1, 6, end_outer_loop_2 # conditional for outer loop (column iteration)
 	addi $t3, $t1, 0 # checker iterator (starts from middle row, goes up to bottom row)
 	inner_loop:
 	beq $t3, 0, end_inner # conditional for inner loop (adjacent (above current) cell checker)
@@ -585,18 +585,18 @@
 	
 .macro move_down_cascade()
 	li $t0, 0 # row iterator
-	li $s7, 3 # game board size
+	li $s7, 6 # game board size
 	li $s4, 4 #
 	li $v0, 0
 	outer_loop_1:
-	beq $t0, 3, end
-	li $t1, 1 # column iterator
+	beq $t0, 6, end
+	li $t1, 4 # column iterator
 	outer_loop_2:
 	beq $t1, -1, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
 
 	inner_loop:
-	beq $t3, 2, end_inner
+	beq $t3, 5, end_inner
 	# compute for previous cell address
 	addi $t3, $t3, 1
 	mul $t4, $s7, $t3
@@ -643,14 +643,14 @@
 
 .macro move_left_cascade()
 	li $t0, 0 # row iterator
-	li $s7, 3 # game board size
+	li $s7, 6 # game board size
 	li $s4, 4 # 4 for address offset multiplier
 	li $v0, 0 # return value for movement/fuse indicator
 	outer_loop_1: # row iterator loop
-	beq $t0, 3, end # row iterator condition
+	beq $t0, 6, end # row iterator condition
 	li $t1, 1 # column iterator
 	outer_loop_2: # column iterator loop
-	beq $t1, 3, end_outer_loop_2 # conditional for column iterator loop
+	beq $t1, 6, end_outer_loop_2 # conditional for column iterator loop
 	addi $t3, $t1, 0 # checker iterator
 
 	inner_loop: # loop for adjacent cells (left)
@@ -700,18 +700,18 @@
 
 .macro move_right_cascade()
 	li $t0, 0 # row iterator
-	li $s7, 3 # game board size
+	li $s7, 6 # game board size
 	li $s4, 4
 	li $v0, 0
 	outer_loop_1:
-	beq $t0, 3, end
-	li $t1, 1 # column iterator
+	beq $t0, 6, end
+	li $t1, 4 # column iterator
 	outer_loop_2:
 	
 	beq $t1, -1, end_outer_loop_2
 	addi $t3, $t1, 0 # checker iterator
 	inner_loop:
-	beq $t3, 2, end_inner
+	beq $t3, 5, end_inner
 	# compute for previous cell address
 	addi $t3, $t3, 1
 	mul $t4, $s7, $t0
