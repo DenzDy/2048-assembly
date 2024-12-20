@@ -75,7 +75,6 @@ int check_win_state(int board[][3]){
 int swipe_board(char input, int board[][3], int prev_swipe){
     if(input == 'W'){
         for(int i = 0; i < 3; i++){
-            int l = 0;
             for(int j = 1; j <= 2; j++){
                 int k = j;
                 while(k > 0){
@@ -83,10 +82,9 @@ int swipe_board(char input, int board[][3], int prev_swipe){
                         board[k-1][i] += board[k][i];
                         board[k][i] = 0;
                     }
-                    else if(board[k-1][i] == board[k][i] && l < 1){
+                    else if(board[k-1][i] == board[k][i]){
                         board[k-1][i] += board[k][i];
                         board[k][i] = 0;
-                        l++;
                     }
                     k--;
                 }
