@@ -1059,6 +1059,8 @@ cg_input_start:
 	print_str_input(custom_game_cell_msg)
 	get_int_input($t0)		# ask for cell number
 	beq	$t0, 0, after_add	# 0 to end configuration
+	blt $t0, 1, cg_input_start
+	bgt $t0, 36, cg_input_start
 	subi	$t0, $t0, 1		# -1 if not "end configuration"
 	
 cg_input_loop:
@@ -1075,6 +1077,8 @@ cg_input_loop:
 	beq $t1, 128, next
 	beq $t1, 256, next
 	beq $t1, 512, next
+	beq $t1, 1024, next
+	beq $t1, 2048, next
 	print_str_input(invalid_custom_input)
 	b cg_input_loop
 	next:
