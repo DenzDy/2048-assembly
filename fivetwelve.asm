@@ -17,14 +17,14 @@
 
 .macro check_win_state()
 	li $t0, 0 # row iterator
-	li $s7, 3 # game board size
+	li $s7, 6 # game board size
 	li $s4, 4
 	li $v0, 0
 	outer_loop:
-	beq $t0, 3, end
+	beq $t0, 6, end
 	li $t1, 0 # column iterator
 	inner_loop:
-	beq $t1, 3, inner_loop_end
+	beq $t1, 6, inner_loop_end
 	
 	# calculate current cell address
 	mul $t2, $s7, $t0
@@ -49,15 +49,15 @@
 	get_cell_value($t4, $t4)
 	
 	# conditionals
-	beq $t1, 2, skip_horizontal
+	beq $t1, 5, skip_horizontal
 	beq $t2, $t3, return_2
 	skip_horizontal:
-	beq $t0, 2, skip_vertical
+	beq $t0, 5, skip_vertical
 	beq $t2, $t4, return_2
 	skip_vertical:
 	beq $t2, 0, return_2
 	loop_return:
-	beq $t2, 512, return_1
+	beq $t2, 2048, return_1
 	addi $t1, $t1, 1
 	j inner_loop
 	inner_loop_end:
