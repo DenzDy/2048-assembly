@@ -193,7 +193,7 @@
 	li $v0, 0
 	outer_loop_1:
 	beq $t0, 6, end
-	li $t1, 1 # column iterator
+	li $t1, 5 # column iterator
 	li $t2, 0 # counter for amount of switches per column
 	outer_loop_2:
 	beq $t1, -1, end_outer_loop_2
@@ -925,7 +925,7 @@ end_print_loop:
 	li $t0, 0
 	li $t4, 0
 	li $v0, 1
-	li $t5, 8
+	li $t5, 36
 	loop:
 		addi $t0, $t4, 0
 		addi	$t1, $0, 4	# set t0 to 4 for multiplication
